@@ -279,10 +279,12 @@ fn convert_line(text: &str) -> String {
         }
     }
     let stage0 = ans.join("");
-    let rg1 = Regex::new(r"^ʔɑ([mnŋ])([^ˈ])").unwrap();
-    let stage1 = rg1.replace_all(&stage0, "ɑ$1$2");
-    let rg2 = Regex::new(r"^ʔɑː([^ˈ])").unwrap();
-    rg2.replace_all(&stage1, "ɑː$1").to_string()
+    lazy_static! {
+        static ref RG1: Regex = Regex::new(r"^ʔɑ([mnŋ])([^ˈ])").unwrap();
+        static ref RG2: Regex = Regex::new(r"^ʔɑː([^ˈ])").unwrap();
+    }
+    let stage1 = RG1.replace_all(&stage0, "ɑ$1$2");
+    RG2.replace_all(&stage1, "ɑː$1").to_string()
 }
 
 pub fn convert(text: &str) -> String {

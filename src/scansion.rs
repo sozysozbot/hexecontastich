@@ -181,38 +181,36 @@ fn crop_letters(s: &str, pos: usize) -> &str {
 }
 
 fn scan_one_syllable(text: &str) -> (&'static str, &str) {
-    let m1 = Regex::new(r"^([pbmtdrnskg'][aeiou][:h])").unwrap();
-    let m2 = Regex::new(r"^([pbmtdrnskg'][aeiou]ss)").unwrap();
-    let m3 = Regex::new(r"^([pbmtdrnskg'][aeiou][nm]$)").unwrap();
-    let m4 = Regex::new(r"^([pbmtdrnskg'][aeiou][nm][^AEIOUaeiou])").unwrap();
-
-    let macc1 = Regex::new(r"^([pbmtdrnskg'][AEIOU][:h])").unwrap();
-    let macc2 = Regex::new(r"^([pbmtdrnskg'][AEIOU]ss)").unwrap();
-    let macc3 = Regex::new(r"^([pbmtdrnskg'][AEIOU][nm]$)").unwrap();
-    let macc4 = Regex::new(r"^([pbmtdrnskg'][AEIOU][nm][^AEIOUaeiou])").unwrap();
-
-    let u = Regex::new(r"^([pbmtdrnskg'][aeiou])").unwrap();
-
-    let uacc1 = Regex::new(r"^([pbmtdrnskg'][AEIOU])").unwrap();
-    let uacc2 = Regex::new(r"^([bdrg]\*[AEIOU])").unwrap();
-
-    if m1.find(text).is_some()
-        || m2.find(text).is_some()
-        || m3.find(text).is_some()
-        || m4.find(text).is_some()
+    lazy_static! {
+        static ref M1: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou][:h])").unwrap();
+        static ref M2: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou]ss)").unwrap();
+        static ref M3: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou][nm]$)").unwrap();
+        static ref M4: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou][nm][^AEIOUaeiou])").unwrap();
+        static ref MACC1: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU][:h])").unwrap();
+        static ref MACC2: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU]ss)").unwrap();
+        static ref MACC3: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU][nm]$)").unwrap();
+        static ref MACC4: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU][nm][^AEIOUaeiou])").unwrap();
+        static ref U: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou])").unwrap();
+        static ref UACC1: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU])").unwrap();
+        static ref UACC2: Regex = Regex::new(r"^([bdrg]\*[AEIOU])").unwrap();
+    }
+    if M1.find(text).is_some()
+        || M2.find(text).is_some()
+        || M3.find(text).is_some()
+        || M4.find(text).is_some()
     {
         return ("m", crop_letters(text, 3));
-    } else if macc1.find(text).is_some()
-        || macc2.find(text).is_some()
-        || macc3.find(text).is_some()
-        || macc4.find(text).is_some()
+    } else if MACC1.find(text).is_some()
+        || MACC2.find(text).is_some()
+        || MACC3.find(text).is_some()
+        || MACC4.find(text).is_some()
     {
         return ("m\u{0301}", crop_letters(text, 3));
-    } else if u.find(text).is_some() {
+    } else if U.find(text).is_some() {
         return ("u", crop_letters(text, 2));
-    } else if uacc1.find(text).is_some() {
+    } else if UACC1.find(text).is_some() {
         return ("u\u{0301}", crop_letters(text, 2));
-    } else if uacc2.find(text).is_some() {
+    } else if UACC2.find(text).is_some() {
         // extrametricity elides the pause, leniting the plosives
         return ("u\u{0301}", crop_letters(text, 3));
     } else {
