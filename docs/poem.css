@@ -1,0 +1,15 @@
+.poem_block {
+    line-height: 55%;
+    width: 320px;
+    font-family: Charis SIL, Gentium Plus, Segoe UI, Doulos SIL, DejaVu Sans, Lucida Sans Unicode, Lucida Grande, Arial Unicode MS, sans-serif;
+}
+
+.line_number {
+    margin: 0 30px 0 0;
+    float: right;
+    clear: right;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
