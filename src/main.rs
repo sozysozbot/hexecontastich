@@ -84,25 +84,28 @@ nampasinIhtera'a:nisirIngi
 
     let converted = data.into_iter().map(convert::convert).collect::<Vec<_>>();
 
-    let latter = r#"
-        let line_index = 0;
-        for (let i = 0; i < texts.length; i++) {
-            document.getElementById(`res${i + 1}`).innerHTML =
-                texts[i]
-                    .split("\n")
-                    .filter(a => a !== "")
-                    .map(a => {
-                        line_index++;
-                        if (line_index % 5 === 0) {
-                            return `<p>${a}<span class="line_number">${line_index}</span></p>`
-                        } else {
-                            return `<p>${a}</p>`
-                        }
-                    })
-                    .join("\n");
-        }   
-</script>    
-    "#;
+    let mut res = vec![];
+
+    let mut line_index = 0;
+    for u in converted.iter() {
+        res.push(
+            u.lines()
+                .filter(|l| *l != "")
+                .map(|a| {
+                    line_index += 1;
+                    if line_index % 5 == 0 {
+                        return format!(
+                            "<p>{}<span class=\"line_number\">{}</span></p>",
+                            a, line_index
+                        );
+                    } else {
+                        return format!("<p>{}</p>", a);
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("\n"),
+        );
+    }
 
     write!(
         file,
@@ -111,31 +114,14 @@ nampasinIhtera'a:nisirIngi
 <meta charset="utf-8">
 <link href="poem.css" rel="stylesheet">
 <a href="index.html">back to top</a> <a href="2020-09-26.html">main text</a> <a href="2020-09-26-scansion.html">scansion</a><br><br>
-1. <div id="res1" class="poem_block"></div><br>
-2. <div id="res2" class="poem_block"></div><br>
-3. <div id="res3" class="poem_block"></div><br>
-4. <div id="res4" class="poem_block"></div><br>
-5. <div id="res5" class="poem_block"></div><br>
-6. <div id="res6" class="poem_block"></div><br>
-
-<script src="main.js"></script>
-<script>
-    const texts = [
-        `
-{}
-`, `
-{}
-`, `
-{}
-`, `
-{}
-`, `
-{}
-`, `
-{}
-`
-    ];{}"#,
-        converted[0], converted[1], converted[2], converted[3], converted[4], converted[5], latter
+1. <div id="res1" class="poem_block">{}</div><br>
+2. <div id="res2" class="poem_block">{}</div><br>
+3. <div id="res3" class="poem_block">{}</div><br>
+4. <div id="res4" class="poem_block">{}</div><br>
+5. <div id="res5" class="poem_block">{}</div><br>
+6. <div id="res6" class="poem_block">{}</div><br>
+"#,
+        res[0], res[1], res[2], res[3], res[4], res[5],
     )?;
     Ok(())
 }
