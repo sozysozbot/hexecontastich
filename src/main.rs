@@ -11,10 +11,10 @@ use std::fs::File;
 use std::io::Write;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut file = File::create("docs/2020-09-26.html")?;
-
-    let data = vec![
-        "
+    write_file(
+        "2020-09-26",
+        &vec![
+            "
 'I:gakinA:sebi'AntegonI:si:
 se:sUperi:'a:gAntasorI:'a
 'a:kasinE:raga'A:ri:ni:sEko
@@ -29,7 +29,7 @@ dAnkatina:sAhtantibinEsse
 'a:ka:kAssiritAhteganI:
 bi:rine'a:rAkiga:na:'Ihti
 'IhtoresAntanisUhtabi'Onda",
-        "
+            "
 mi:si:'a:tInatankeronAhte
 kantetinIssi'akAsene:mI:
 nihtina'a:gAse'a:rina'Ihte
@@ -40,7 +40,7 @@ ni:rise'Andiki'A:samarIhti
 'i:ri:bAsena:'AssinanI:
 dihtire'Ahpisira:ka:se:nAsi
 ni:bise'Ahtana'Irome:nI:",
-        "
+            "
 ne:sIgi'assAre'a:ka:nAnte
 ti:rekirI:rekanAsene:mI:
 kuhtina'IndesirA:nisomInde
@@ -49,7 +49,7 @@ mi:miserAntani'Asse'orI:re
 dihtesinImbanibAsene:mI:
 nindisomAhterana:gaserIhti
 ni:ni:sAndire'AssabagOhta",
-        "
+            "
 'a:sUpana:'a:nIhtinasEndi
 se:se:pOturi:'AssagarI:ra
 ne:be:'a:tInasi:rakurAhti
@@ -62,7 +62,7 @@ mEhtako'i:rIse'Agone:sI:
 de:re:sAturi:nAsome:nI:
 ni:'Ameka:ta:gAssatinAhta
 si:si:'AhteribIndabinAhta",
-        "
+            "
 sa:'a:re:gAsi'a:gasenInti
 me:ne:tOgusiri'Asene:mI:
 ti:nIsema:na:bEntasinAhte
@@ -77,12 +77,18 @@ se:be:'AssirinIndasinAnde
 'Isima:'a:bIsesApire:mI:
 mEssirinIntami'AnderemIssi
 ma:nApari:ni:rUhteribImba",
-        "
+            "
 nampasinIhtera'a:nisirIngi
 'a:ka:nIsige:'AhtabamI:",
-    ];
-
-    let converted = data.into_iter().map(convert::convert).collect::<Vec<_>>();
+        ],
+    )
+}
+fn write_file(filename: &str, data: &[&str]) -> Result<(), Box<dyn Error>> {
+    let mut file = File::create(format!("docs/{}.html", filename))?;
+    let converted = data
+        .into_iter()
+        .map(|a| convert::convert(a.clone()))
+        .collect::<Vec<_>>();
 
     let mut res = vec![];
 
@@ -107,21 +113,25 @@ nampasinIhtera'a:nisirIngi
         );
     }
 
+    let mut content = String::new();
+
+    for (i, r) in res.iter().enumerate() {
+        content += &format!(
+            "{}. <div id=\"res{}\" class=\"poem_block\">{}</div><br>\n",
+            i + 1,
+            i + 1,
+            r
+        )
+    }
+
     write!(
         file,
-        r#"
-<!DOCTYPE html>
+        r#"<!DOCTYPE html>
 <meta charset="utf-8">
 <link href="poem.css" rel="stylesheet">
-<a href="index.html">back to top</a> <a href="2020-09-26.html">main text</a> <a href="2020-09-26-scansion.html">scansion</a><br><br>
-1. <div id="res1" class="poem_block">{}</div><br>
-2. <div id="res2" class="poem_block">{}</div><br>
-3. <div id="res3" class="poem_block">{}</div><br>
-4. <div id="res4" class="poem_block">{}</div><br>
-5. <div id="res5" class="poem_block">{}</div><br>
-6. <div id="res6" class="poem_block">{}</div><br>
-"#,
-        res[0], res[1], res[2], res[3], res[4], res[5],
+<a href="index.html">back to top</a> <a href="{}.html">main text</a> <a href="{}-scansion.html">scansion</a><br><br>
+{}"#,
+        filename, filename, content,
     )?;
     Ok(())
 }
