@@ -84,7 +84,29 @@ nampasinIhtera'a:nisirIngi
 
     let converted = data.into_iter().map(convert::convert).collect::<Vec<_>>();
 
-    let text = r#"
+    let latter = r#"
+        let line_index = 0;
+        for (let i = 0; i < texts.length; i++) {
+            document.getElementById(`res${i + 1}`).innerHTML =
+                texts[i]
+                    .split("\n")
+                    .filter(a => a !== "")
+                    .map(a => {
+                        line_index++;
+                        if (line_index % 5 === 0) {
+                            return `<p>${a}<span class="line_number">${line_index}</span></p>`
+                        } else {
+                            return `<p>${a}</p>`
+                        }
+                    })
+                    .join("\n");
+        }   
+</script>    
+    "#;
+
+    write!(
+        file,
+        r#"
 <!DOCTYPE html>
 <meta charset="utf-8">
 <link href="poem.css" rel="stylesheet">
@@ -100,95 +122,20 @@ nampasinIhtera'a:nisirIngi
 <script>
     const texts = [
         `
-'I:gakinA:sebi'AntegonI:si:
-se:sUperi:'a:gAntasorI:'a
-'a:kasinE:raga'A:ri:ni:sEko
-ge:te:rImba'asAkabe:nI:
-dEhtonagi:rAse'a:ka:sUhte
-sa:magarIntisisAkare:nI:
-sIssatinA:gabigEntegonI:si:
-se:ramirA:gambOhteganI:
-si:si:'Anteraka:sarinIsse
-'a:kagipIssekAre:rimanI:
-dAnkatina:sAhtantibinEsse
-'a:ka:kAssiritAhteganI:
-bi:rine'a:rAkiga:na:'Ihti
-'IhtoresAntanisUhtabi'Onda
+{}
 `, `
-mi:si:'a:tInatankeronAhte
-kantetinIssi'akAsene:mI:
-nihtina'a:gAse'a:rina'Ihte
-kAssaritIndasakAsere:mI:
-bi:sakinAnte'a'a:gasirIhte
-'intasenAhti'Ana:gisemI:
-ni:rise'Andiki'A:samarIhti
-'i:ri:bAsena:'AssinanI:
-dihtire'Ahpisira:ka:se:nAsi
-ni:bise'Ahtana'Irome:nI:
+{}
 `, `
-ne:sIgi'assAre'a:ka:nAnte
-ti:rekirI:rekanAsene:mI:
-kuhtina'IndesirA:nisomInde
-nIsi'amAse:ratinIsige:mI:
-mi:miserAntani'Asse'orI:re
-dihtesinImbanibAsene:mI:
-nindisomAhterana:gaserIhti
-ni:ni:sAndire'AssabagOhta
+{}
 `, `
-'a:sUpana:'a:nIhtinasEndi
-se:se:pOturi:'AssagarI:ra
-ne:be:'a:tInasi:rakurAhti
-'inkOpeni:ni:sAntegorI:na
-'o:nOhte:'a:gAntari'Asse
-nOhtari'I:nakorIsare:sI:
-ti:gInane:ri:'AhtinarIhti
-mEhtako'i:rIse'Agone:sI:
-'o:nOhte:mi:'AnteginIssa
-de:re:sAturi:nAsome:nI:
-ni:'Ameka:ta:gAssatinAhta
-si:si:'AhteribIndabinAhta
+{}
 `, `
-sa:'a:re:gAsi'a:gasenInti
-me:ne:tOgusiri'Asene:mI:
-ti:nIsema:na:bEntasinAhte
-na:rInase:ni:nAsene:mI:
-si:sitinAhtiri'AndasinAhte
-ni:ni:sa:tIrinIsige:mI:
-kOhtorisImbasebEhtina'Indi
-be:mi:rIhtasinAhtegomI:
-'angasinIntemigIhteribIhti
-so:sUri'a:ga:sAtine:mI:
-se:be:'AssirinIndasinAnde
-'Isima:'a:bIsesApire:mI:
-mEssirinIntami'AnderemIssi
-ma:nApari:ni:rUhteribImba
+{}
 `, `
-nampasinIhtera'a:nisirIngi
-'a:ka:nIsige:'AhtabamI:
+{}
 `
-    ];"#;
-    let latter = r#"
-    function print_poem(f, texts) {
-        let line_index = 0;
-        for (let i = 0; i < texts.length; i++) {
-            document.getElementById(`res${i + 1}`).innerHTML =
-                f(texts[i])
-                    .split("\n")
-                    .filter(a => a !== "")
-                    .map(a => {
-                        line_index++;
-                        if (line_index % 5 === 0) {
-                            return `<p>${a}<span class="line_number">${line_index}</span></p>`
-                        } else {
-                            return `<p>${a}</p>`
-                        }
-                    })
-                    .join("\n");
-        }
-    }
-        print_poem(convert, texts);
-</script>    
-    "#;
-    write!(file, "{}{}", text, latter)?;
+    ];{}"#,
+        converted[0], converted[1], converted[2], converted[3], converted[4], converted[5], latter
+    )?;
     Ok(())
 }

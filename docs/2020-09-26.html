@@ -14,78 +14,83 @@
 <script>
     const texts = [
         `
-'I:gakinA:sebi'AntegonI:si:
-se:sUperi:'a:gAntasorI:'a
-'a:kasinE:raga'A:ri:ni:sEko
-ge:te:rImba'asAkabe:nI:
-dEhtonagi:rAse'a:ka:sUhte
-sa:magarIntisisAkare:nI:
-sIssatinA:gabigEntegonI:si:
-se:ramirA:gambOhteganI:
-si:si:'Anteraka:sarinIsse
-'a:kagipIssekAre:rimanI:
-dAnkatina:sAhtantibinEsse
-'a:ka:kAssiritAhteganI:
-bi:rine'a:rAkiga:na:'Ihti
-'IhtoresAntanisUhtabi'Onda
+
+ˈʔiːɣəkiˈnɑːse̞βiˈʔɑnte̞ɣo̞ˈniːsiː
+se̞ːˈsupe̞ɾiːʔɑːˈɣɑntəso̞ˈɾiːʔə
+ɑːkəsiˈne̞ːɾəɣəˈʔɑːɾiːniːˈse̞ko̞
+ɡe̞ːte̞ːˈɾimbəʔəˈsɑkəβe̞ːˈniː
+ˈde̞hto̞nəɣiːˈɾɑse̞ʔɑːkɑːˈsuhte̞
+sɑːməɣəˈɾintisiˈsɑkəɾe̞ːˈniː
+ˈsissətiˈnɑːɣəβiˈɣe̞nte̞ɣo̞ˈniːsiː
+se̞ːɾəmiˈɾɑːɣəmˈbo̞hte̞ɣəˈniː
+siːsiːˈʔɑnte̞ɾəkɑːsəɾiˈnisse̞
+ɑːkəɣiˈpisse̞ˈkɑɾe̞ːɾiməˈniː
+ˈdɑŋkətinɑːˈsɑhtɑntiβiˈne̞sse̞
+ɑːkɑːˈkɑssiɾiˈtɑhte̞ɣəˈniː
+biːɾine̞ʔɑːˈɾɑkiɣɑːnɑːˈʔihti
+ˈʔihto̞ɾe̞ˈsɑntəniˈsuhtəβiˈʔo̞ndə
 `, `
-mi:si:'a:tInatankeronAhte
-kantetinIssi'akAsene:mI:
-nihtina'a:gAse'a:rina'Ihte
-kAssaritIndasakAsere:mI:
-bi:sakinAnte'a'a:gasirIhte
-'intasenAhti'Ana:gisemI:
-ni:rise'Andiki'A:samarIhti
-'i:ri:bAsena:'AssinanI:
-dihtire'Ahpisira:ka:se:nAsi
-ni:bise'Ahtana'Irome:nI:
+
+miːsiːʔɑːˈtinətɑŋke̞ɾo̞ˈnɑhte̞
+kɑnte̞tiˈnissiʔəˈkɑse̞ne̞ːˈmiː
+nihtinəʔɑːˈɣɑse̞ʔɑːɾinəˈʔihte̞
+ˈkɑssəɾiˈtindəsəˈkɑse̞ɾe̞ːˈmiː
+biːsəkiˈnɑnte̞ʔəʔɑːɣəsiˈɾihte̞
+ʔintəse̞ˈnɑhtiˈʔɑnɑːɣise̞ˈmiː
+niːɾise̞ˈʔɑndikiˈʔɑːsəməˈɾihti
+ʔiːɾiːˈβɑse̞nɑːˈʔɑssinəˈniː
+dihtiɾe̞ˈʔɑhpisiɾɑːkɑːse̞ːˈnɑsi
+niːβise̞ˈʔɑhtənəˈʔiɾo̞me̞ːˈniː
 `, `
-ne:sIgi'assAre'a:ka:nAnte
-ti:rekirI:rekanAsene:mI:
-kuhtina'IndesirA:nisomInde
-nIsi'amAse:ratinIsige:mI:
-mi:miserAntani'Asse'orI:re
-dihtesinImbanibAsene:mI:
-nindisomAhterana:gaserIhti
-ni:ni:sAndire'AssabagOhta
+
+ne̞ːˈsiɣiʔəsˈsɑɾe̞ʔɑːkɑːˈnɑnte̞
+tiːɾe̞kiˈɾiːɾe̞kəˈnɑse̞ne̞ːˈmiː
+kuhtinəˈʔinde̞siˈɾɑːniso̞ˈminde̞
+ˈnisiʔəˈmɑse̞ːɾətiˈnisiɣe̞ːˈmiː
+miːmise̞ˈɾɑntəniˈʔɑsse̞ʔo̞ˈɾiːɾe̞
+dihte̞siˈnimbəniˈβɑse̞ne̞ːˈmiː
+nindiso̞ˈmɑhte̞ɾənɑːɣəse̞ˈɾihti
+niːniːˈsɑndiɾe̞ˈʔɑssəβəˈɣo̞htə
 `, `
-'a:sUpana:'a:nIhtinasEndi
-se:se:pOturi:'AssagarI:ra
-ne:be:'a:tInasi:rakurAhti
-'inkOpeni:ni:sAntegorI:na
-'o:nOhte:'a:gAntari'Asse
-nOhtari'I:nakorIsare:sI:
-ti:gInane:ri:'AhtinarIhti
-mEhtako'i:rIse'Agone:sI:
-'o:nOhte:mi:'AnteginIssa
-de:re:sAturi:nAsome:nI:
-ni:'Ameka:ta:gAssatinAhta
-si:si:'AhteribIndabinAhta
+
+ʔɑːˈsupənɑːʔɑːˈnihtinəˈse̞ndi
+se̞ːse̞ːˈpo̞tuɾiːˈʔɑssəɣəˈɾiːɾə
+ne̞ːβe̞ːʔɑːˈtinəsiːɾəkuˈɾɑhti
+ʔiŋˈko̞pe̞niːniːˈsɑnte̞ɣo̞ˈɾiːnə
+ʔo̞ːˈno̞hte̞ːʔɑːˈɣɑntəɾiˈʔɑsse̞
+ˈno̞htəɾiˈʔiːnəko̞ˈɾisəɾe̞ːˈsiː
+tiːˈɣinəne̞ːɾiːˈʔɑhtinəˈɾihti
+ˈme̞htəko̞ʔiːˈɾise̞ˈʔɑɣo̞ne̞ːˈsiː
+ʔo̞ːˈno̞hte̞ːmiːˈʔɑnte̞ɣiˈnissə
+de̞ːɾe̞ːˈsɑtuɾiːˈnɑso̞me̞ːˈniː
+niːˈʔɑme̞kɑːtɑːˈɣɑssətiˈnɑhtə
+siːsiːˈʔɑhte̞ɾiˈβindəβiˈnɑhtə
 `, `
-sa:'a:re:gAsi'a:gasenInti
-me:ne:tOgusiri'Asene:mI:
-ti:nIsema:na:bEntasinAhte
-na:rInase:ni:nAsene:mI:
-si:sitinAhtiri'AndasinAhte
-ni:ni:sa:tIrinIsige:mI:
-kOhtorisImbasebEhtina'Indi
-be:mi:rIhtasinAhtegomI:
-'angasinIntemigIhteribIhti
-so:sUri'a:ga:sAtine:mI:
-se:be:'AssirinIndasinAnde
-'Isima:'a:bIsesApire:mI:
-mEssirinIntami'AnderemIssi
-ma:nApari:ni:rUhteribImba
+
+sɑːʔɑːɾe̞ːˈɣɑsiʔɑːɣəse̞ˈninti
+me̞ːne̞ːˈto̞ɣusiɾiˈʔɑse̞ne̞ːˈmiː
+tiːˈnise̞mɑːnɑːˈβe̞ntəsiˈnɑhte̞
+nɑːˈɾinəse̞ːniːˈnɑse̞ne̞ːˈmiː
+siːsitiˈnɑhtiɾiˈʔɑndəsiˈnɑhte̞
+niːniːsɑːˈtiɾiˈnisiɣe̞ːˈmiː
+ˈko̞hto̞ɾiˈsimbəse̞ˈβe̞htinəˈʔindi
+be̞ːmiːˈɾihtəsiˈnɑhte̞ɣo̞ˈmiː
+ɑŋɡəsiˈninte̞miˈɣihte̞ɾiˈβihti
+so̞ːˈsuɾiʔɑːɣɑːˈsɑtine̞ːˈmiː
+se̞ːβe̞ːˈʔɑssiɾiˈnindəsiˈnɑnde̞
+ˈʔisimɑːʔɑːˈβise̞ˈsɑpiɾe̞ːˈmiː
+ˈme̞ssiɾiˈnintəmiˈʔɑnde̞ɾe̞ˈmissi
+mɑːˈnɑpəɾiːniːˈɾuhte̞ɾiˈβimbə
 `, `
-nampasinIhtera'a:nisirIngi
-'a:ka:nIsige:'AhtabamI:
+
+nɑmpəsiˈnihte̞ɾəʔɑːnisiˈɾiŋɡi
+ɑːkɑːˈnisiɣe̞ːˈʔɑhtəβəˈmiː
 `
     ];
-    function print_poem(f, texts) {
         let line_index = 0;
         for (let i = 0; i < texts.length; i++) {
             document.getElementById(`res${i + 1}`).innerHTML =
-                f(texts[i])
+                texts[i]
                     .split("\n")
                     .filter(a => a !== "")
                     .map(a => {
@@ -97,8 +102,6 @@ nampasinIhtera'a:nisirIngi
                         }
                     })
                     .join("\n");
-        }
-    }
-        print_poem(convert, texts);
+        }   
 </script>    
     
