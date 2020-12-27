@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         if !path.is_dir() {
             let date = entry.file_name().into_string().unwrap();
 
-            println!("{:?}", date);
+            println!("Converting {}", date);
             let content = std::fs::read_to_string(format!("raw/{}", date))?;
 
             // to convert \r\n into \n
