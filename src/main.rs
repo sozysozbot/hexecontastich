@@ -11,7 +11,7 @@ use std::fs::File;
 use std::io::Write;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    write_file(
+    write_files(
         "2020-09-26",
         &vec![
             "
@@ -83,13 +83,28 @@ nampasinIhtera'a:nisirIngi
         ],
     )
 }
-fn write_file(filename: &str, data: &[&str]) -> Result<(), Box<dyn Error>> {
-    let mut file = File::create(format!("docs/{}.html", filename))?;
-    let converted = data
-        .into_iter()
-        .map(|a| convert::convert(a.clone()))
-        .collect::<Vec<_>>();
 
+fn write_files(date: &str, data: &[&str]) -> Result<(), Box<dyn Error>> {
+    {
+        let mut file = File::create(format!("docs/{}.html", date))?;
+        let converted = data
+            .into_iter()
+            .map(|a| convert::convert(a.clone()))
+            .collect::<Vec<_>>();
+
+        write_file(&mut file, &converted, date)?;
+    }
+    {
+        let mut file = File::create(format!("docs/{}-scansion.html", date))?;
+        let scansion = data
+            .into_iter()
+            .map(|a| scansion::scansion(a.clone()))
+            .collect::<Vec<_>>();
+
+        write_file(&mut file, &scansion, date)
+    }
+}
+fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<(), Box<dyn Error>> {
     let mut res = vec![];
 
     let mut line_index = 0;
@@ -117,7 +132,7 @@ fn write_file(filename: &str, data: &[&str]) -> Result<(), Box<dyn Error>> {
 
     for (i, r) in res.iter().enumerate() {
         content += &format!(
-            "{}. <div id=\"res{}\" class=\"poem_block\">{}</div><br>\n",
+            "{}. <div id=\"res{}\" class=\"poem_block\">\n{}</div><br>\n\n",
             i + 1,
             i + 1,
             r
@@ -131,7 +146,7 @@ fn write_file(filename: &str, data: &[&str]) -> Result<(), Box<dyn Error>> {
 <link href="poem.css" rel="stylesheet">
 <a href="index.html">back to top</a> <a href="{}.html">main text</a> <a href="{}-scansion.html">scansion</a><br><br>
 {}"#,
-        filename, filename, content,
+        date, date, content,
     )?;
     Ok(())
 }
