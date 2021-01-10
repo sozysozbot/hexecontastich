@@ -14,6 +14,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     use itertools::Itertools;
     use std::collections::HashMap;
     let mut map = HashMap::new();
+    let mut total_lines = 0;
     for entry in std::fs::read_dir("raw/")? {
         let entry = entry?;
         let path = entry.path();
@@ -37,8 +38,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             };
 
             map.insert(date, li);
+
+            total_lines += how_many_lines;
         }
     }
+
+    println!("Processed the total of {} lines.", total_lines);
 
     let sorted = map
         .into_iter()
