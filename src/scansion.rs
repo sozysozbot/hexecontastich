@@ -182,11 +182,11 @@ fn crop_letters(s: &str, pos: usize) -> &str {
 
 fn scan_one_syllable(text: &str) -> (&'static str, &str) {
     lazy_static! {
-        static ref M1: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou][:h])").unwrap();
+        static ref M1: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou][:;h])").unwrap();
         static ref M2: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou]ss)").unwrap();
         static ref M3: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou][nm]$)").unwrap();
         static ref M4: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou][nm][^AEIOUaeiou])").unwrap();
-        static ref MACC1: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU][:h])").unwrap();
+        static ref MACC1: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU][:;h])").unwrap();
         static ref MACC2: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU]ss)").unwrap();
         static ref MACC3: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU][nm]$)").unwrap();
         static ref MACC4: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU][nm][^AEIOUaeiou])").unwrap();

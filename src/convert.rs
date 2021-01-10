@@ -233,7 +233,7 @@ fn convert_line(text: &str) -> String {
             'i' => ans.push("i"),
             'u' => ans.push("u"),
             'h' => ans.push("h"),
-            ':' => {
+            ':' | ';' => {
                 if ans.last() == Some(&"ə") {
                     *(ans.last_mut().unwrap()) = "ɑ"
                 }
