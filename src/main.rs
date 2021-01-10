@@ -11,6 +11,9 @@ use std::fs::File;
 use std::io::Write;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    use itertools::Itertools;
+    use std::collections::HashMap;
+    let mut map = HashMap::new();
     for entry in std::fs::read_dir("raw/")? {
         let entry = entry?;
         let path = entry.path();
@@ -25,14 +28,34 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let cont = content.split("\n\n").collect::<Vec<_>>();
 
-            write_files(&date, &cont)?;
+            let how_many_lines = write_files(&date, &cont)?;
+
+            let li = if how_many_lines == 60 {
+                format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
+            } else {
+                format!("    <li><a href=\"{}.html\">{}</a> (only the first {} lines are attested)</li>", date, date, how_many_lines)
+            };
+
+            map.insert(date, li);
         }
     }
+
+    let sorted = map
+        .into_iter()
+        .sorted()
+        .map(|(_date, li)| li)
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    println!("Writing index.html");
+    let mut file = File::create(format!("docs/index.html"))?;
+    write!(file, "<!DOCTYPE html>\n<ul>\n{}\n</ul>\n", sorted)?;
 
     Ok(())
 }
 
-fn write_files(date: &str, data: &[&str]) -> Result<(), Box<dyn Error>> {
+// returns how many lines there are
+fn write_files(date: &str, data: &[&str]) -> Result<i32, Box<dyn Error>> {
     {
         let mut file = File::create(format!("docs/{}.html", date))?;
         let converted = data
@@ -52,7 +75,9 @@ fn write_files(date: &str, data: &[&str]) -> Result<(), Box<dyn Error>> {
         write_file(&mut file, &scansion, date)
     }
 }
-fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<(), Box<dyn Error>> {
+
+// returns how many lines there are
+fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<i32, Box<dyn Error>> {
     let mut res = vec![];
 
     let mut line_index = 0;
@@ -96,5 +121,6 @@ fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<(), B
 {}"#,
         date, date, content,
     )?;
-    Ok(())
+
+    Ok(line_index)
 }
