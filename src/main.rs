@@ -1,3 +1,6 @@
+#![warn(clippy::pedantic, clippy::nursery)]
+#![allow(clippy::non_ascii_literal, clippy::unicode_not_nfc)]
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -60,10 +63,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 // returns how many lines there are
-fn write_files(date: &str, data: &[&str]) -> Result<i32, Box<dyn Error>> {
+fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
     {
         let mut file = File::create(format!("docs/{}.html", date))?;
-        let converted = data
+        let converted = content
             .into_iter()
             .map(|a| convert::convert(a.clone()))
             .collect::<Vec<_>>();
@@ -72,7 +75,7 @@ fn write_files(date: &str, data: &[&str]) -> Result<i32, Box<dyn Error>> {
     }
     {
         let mut file = File::create(format!("docs/{}-scansion.html", date))?;
-        let scansion = data
+        let scansion = content
             .into_iter()
             .map(|a| scansion::scansion(a.clone()))
             .collect::<Vec<_>>();
@@ -89,16 +92,19 @@ fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<i32, 
     for u in converted.iter() {
         res.push(
             u.lines()
-                .filter(|l| *l != "")
-                .map(|a| {
-                    line_index += 1;
-                    if line_index % 5 == 0 {
-                        return format!(
-                            "<p>{}<span class=\"line_number\">{}</span></p>",
-                            a, line_index
-                        );
+                .filter_map(|a| {
+                    if a == "" {
+                        None
                     } else {
-                        return format!("<p>{}</p>", a);
+                        line_index += 1;
+                        if line_index % 5 == 0 {
+                            Some(format!(
+                                "<p>{}<span class=\"line_number\">{}</span></p>",
+                                a, line_index
+                            ))
+                        } else {
+                            Some(format!("<p>{}</p>", a))
+                        }
                     }
                 })
                 .collect::<Vec<_>>()

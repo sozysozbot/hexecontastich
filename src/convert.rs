@@ -123,6 +123,7 @@ pub fn second_from_last_mut<T>(a: &mut [T]) -> Option<&mut T> {
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn convert_line(text: &str) -> String {
     let text: Vec<char> = text.chars().collect();
     let mut ans = vec![];
