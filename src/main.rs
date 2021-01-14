@@ -69,7 +69,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .join("\n");
     println!("Writing progress.tsv");
     let mut file = File::create("progress.tsv")?;
-    write!(file, "{}\n", progress)?;
+    writeln!(file, "{}", progress)?;
 
     Ok(())
 }
@@ -79,8 +79,8 @@ fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
     {
         let mut file = File::create(format!("docs/{}.html", date))?;
         let converted = content
-            .into_iter()
-            .map(|a| convert::convert(a.clone()))
+            .iter()
+            .map(|a| convert::convert(a))
             .collect::<Vec<_>>();
 
         write_file(&mut file, &converted, date)?;
@@ -88,8 +88,8 @@ fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
     {
         let mut file = File::create(format!("docs/{}-scansion.html", date))?;
         let scansion = content
-            .into_iter()
-            .map(|a| scansion::scansion(a.clone()))
+            .iter()
+            .map(|a| scansion::scansion(a))
             .collect::<Vec<_>>();
 
         write_file(&mut file, &scansion, date)
@@ -105,7 +105,7 @@ fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<i32, 
         res.push(
             u.lines()
                 .filter_map(|a| {
-                    if a == "" {
+                    if a.is_empty() {
                         None
                     } else {
                         line_index += 1;

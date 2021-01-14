@@ -151,11 +151,9 @@ fn convert_line(text: &str) -> String {
                     // closed syllable?
                     if text.len() == i + 1
                     /* end of a line */
-                    {
-                        *(ans.last_mut().unwrap()) = "ɑ"
-                    } else if !vec!['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'].contains(&text[i + 1]) /* consonant follows */
+                    || (!vec!['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'].contains(&text[i + 1]) /* consonant follows */
                         && !vec!['A', 'E', 'I', 'O', 'U'].contains(&text[i + 2])
-                    /* accented vowel does not follow */
+                /* accented vowel does not follow */)
                     {
                         *(ans.last_mut().unwrap()) = "ɑ"
                     }
@@ -166,13 +164,10 @@ fn convert_line(text: &str) -> String {
                 // if closed syllable, ə becomes ɑ, except when the next syllable is accented
                 if ans.last() == Some(&"ə") {
                     // closed syllable?
-                    if text.len() == i + 1
-                    /* end of a line */
-                    {
-                        *(ans.last_mut().unwrap()) = "ɑ"
-                    } else if !vec!['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'].contains(&text[i + 1]) /* consonant follows */
+                    if text.len() == i + 1 /* end of a line */
+                    || (!vec!['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'].contains(&text[i + 1]) /* consonant follows */
                         && !vec!['A', 'E', 'I', 'O', 'U'].contains(&text[i + 2])
-                    /* accented vowel does not follow */
+                /* accented vowel does not follow */)
                     {
                         *(ans.last_mut().unwrap()) = "ɑ"
                     }
@@ -192,7 +187,7 @@ fn convert_line(text: &str) -> String {
             }
 
             'b' => {
-                if ans.len() == 0 {
+                if ans.is_empty() {
                     ans.push("b");
                 } else if ans.last() == Some(&"n") || ans.last() == Some(&"m") {
                     *(ans.last_mut().unwrap()) = "m";
@@ -203,7 +198,7 @@ fn convert_line(text: &str) -> String {
             }
 
             'g' => {
-                if ans.len() == 0 {
+                if ans.is_empty() {
                     ans.push("ɡ");
                 } else if ans.last() == Some(&"n") {
                     *(ans.last_mut().unwrap()) = "ŋ";
@@ -214,13 +209,11 @@ fn convert_line(text: &str) -> String {
             }
 
             'd' | 'r' => {
-                if ans.len() == 0 {
-                    ans.push("d");
-                } else if ans.last() == Some(&"n") {
-                    ans.push("d");
-                } else if vec!['a', 'e', 'i', 'o', 'u'].contains(&text[i + 1])
-                    && text.len() != i + 2
-                    && vec!['d', 'r'].contains(&text[i + 2])
+                if ans.is_empty()
+                    || ans.last() == Some(&"n")
+                    || (vec!['a', 'e', 'i', 'o', 'u'].contains(&text[i + 1])
+                        && text.len() != i + 2
+                        && vec!['d', 'r'].contains(&text[i + 2]))
                 {
                     // `/ɾ/` + unaccented short vowel + `/ɾ/` turns the first `/ɾ/` into `[d]`
                     ans.push("d");

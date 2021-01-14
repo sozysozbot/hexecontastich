@@ -164,7 +164,7 @@ pub fn scansion(text: &str) -> String {
 fn scan_syllables(mut text: &str) -> Vec<String> {
     let mut ans = vec![];
     loop {
-        if text == "" {
+        if text.is_empty() {
             return ans;
         }
         let (syl_weight, remaining) = scan_one_syllable(text);
@@ -174,7 +174,7 @@ fn scan_syllables(mut text: &str) -> Vec<String> {
 }
 
 fn crop_letters(s: &str, pos: usize) -> &str {
-    match s.char_indices().skip(pos).next() {
+    match s.char_indices().nth(pos) {
         Some((pos, _)) => &s[pos..],
         None => "",
     }
@@ -236,7 +236,7 @@ fn scansion_line(text: &str) -> String {
 
     while i < arr.len() {
         ans += &arr[i];
-        if arr[i].chars().nth(0) == Some('m') {
+        if arr[i].starts_with('m') {
             mora_count += 2;
         } else {
             mora_count += 1;
@@ -251,5 +251,5 @@ fn scansion_line(text: &str) -> String {
         }
         i += 1;
     }
-    return ans;
+    ans
 }
