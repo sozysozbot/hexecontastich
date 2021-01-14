@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("Writing index.html");
     let mut file = File::create(format!("docs/index.html"))?;
-    write!(file, "<!DOCTYPE html>\n<ul>\n{}\n</ul>\n", sorted)?;
+    write!(file, "<!DOCTYPE html><head><title>Hexecontastich</title></head><body><h2>Hexecontastich</h2>\n<ul>\n{}\n</ul>\n</body>", sorted)?;
 
     Ok(())
 }
