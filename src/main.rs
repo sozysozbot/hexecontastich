@@ -40,24 +40,36 @@ fn main() -> Result<(), Box<dyn Error>> {
                 format!("    <li><a href=\"{}.html\">{}</a> (only the first {} lines are attested)</li>", date, date, how_many_lines)
             };
 
-            map.insert(date, li);
-
             total_lines += how_many_lines;
+
+            map.insert(date, (total_lines, li));
         }
     }
 
     println!("Processed the total of {} lines.", total_lines);
 
-    let sorted = map
-        .into_iter()
-        .sorted()
-        .map(|(_date, li)| li)
+    let sorted = map.into_iter().sorted().collect::<Vec<_>>();
+    let html = sorted
+        .iter()
+        .map(|(_date, (_tot_lines, li))| li.to_owned())
         .collect::<Vec<_>>()
         .join("\n");
 
     println!("Writing index.html");
-    let mut file = File::create(format!("docs/index.html"))?;
-    write!(file, "<!DOCTYPE html><head><title>Hexecontastich</title></head><body><h2>Hexecontastich</h2>\n<ul>\n{}\n</ul>\n</body>", sorted)?;
+    let mut file = File::create("docs/index.html")?;
+    write!(file, "<!DOCTYPE html><head><title>Hexecontastich</title></head><body><h2>Hexecontastich</h2>\n<ul>\n{}\n</ul>\n</body>", html)?;
+
+    let progress = sorted
+        .iter()
+        .map(|(date, (tot_lines, _li))| {
+            let date = date.split('-').collect::<Vec<_>>()[0..=2].join("/");
+            format!("{}\t{}", date, tot_lines)
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    println!("Writing progress.tsv");
+    let mut file = File::create("progress.tsv")?;
+    write!(file, "{}\n", progress)?;
 
     Ok(())
 }
