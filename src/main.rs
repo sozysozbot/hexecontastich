@@ -1,4 +1,4 @@
-#![warn(clippy::pedantic, clippy::nursery)]
+#![warn(clippy::pedantic, clippy::nursery, clippy::nursery)]
 #![allow(clippy::non_ascii_literal, clippy::unicode_not_nfc)]
 
 #[macro_use]
@@ -12,10 +12,14 @@ mod scansion;
 use std::error::Error;
 use std::fs::File;
 use std::io::Write;
+use log::info;
 
 fn main() -> Result<(), Box<dyn Error>> {
     use itertools::Itertools;
     use std::collections::HashMap;
+
+    std::env::set_var("RUST_LOG", "info");
+    env_logger::init();
     let mut map = HashMap::new();
     let mut total_lines = 0;
     for entry in std::fs::read_dir("raw/")? {
@@ -23,17 +27,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         let path = entry.path();
         if !path.is_dir() {
             let date = entry.file_name().into_string().unwrap();
-
-            println!("Converting {}", date);
+            info!("Converting {}", date);
             let content = std::fs::read_to_string(format!("raw/{}", date))?;
 
             // to convert \r\n into \n
             let content = content.lines().collect::<Vec<_>>().join("\n");
-
             let cont = content.split("\n\n").collect::<Vec<_>>();
-
             let how_many_lines = write_files(&date, &cont)?;
-
             let li = if how_many_lines == 60 {
                 format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
             } else {
@@ -41,12 +41,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             };
 
             total_lines += how_many_lines;
-
             map.insert(date, (total_lines, li));
         }
     }
 
-    println!("Processed the total of {} lines.", total_lines);
+    info!("Processed the total of {} lines.", total_lines);
 
     let sorted = map.into_iter().sorted().collect::<Vec<_>>();
     let html = sorted
@@ -55,7 +54,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect::<Vec<_>>()
         .join("\n");
 
-    println!("Writing index.html");
+    info!("Writing index.html");
     let mut file = File::create("docs/index.html")?;
     write!(file, "<!DOCTYPE html><head><title>Hexecontastich</title></head><body><h2>Hexecontastich</h2>\n<ul>\n{}\n</ul>\n</body>", html)?;
 
@@ -67,7 +66,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .collect::<Vec<_>>()
         .join("\n");
-    println!("Writing progress.tsv");
+    info!("Writing progress.tsv");
     let mut file = File::create("progress.tsv")?;
     writeln!(file, "{}", progress)?;
 
