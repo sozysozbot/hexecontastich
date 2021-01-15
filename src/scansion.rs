@@ -165,6 +165,15 @@ struct WeightAndAccent {
     accented: bool,
 }
 
+impl Into<WeightAndAccent> for super::syllabify::Syllable {
+    fn into(self) -> WeightAndAccent {
+        WeightAndAccent {
+            heavy: self.coda.is_some(),
+            accented: self.accented,
+        }
+    }
+}
+
 impl std::fmt::Display for WeightAndAccent {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
@@ -180,10 +189,7 @@ fn scan_syllables2(text: &str) -> Vec<WeightAndAccent> {
     use super::syllabify::convert_line_to_sylls;
     convert_line_to_sylls(text)
         .into_iter()
-        .map(|syll| WeightAndAccent {
-            heavy: syll.coda.is_some(),
-            accented: syll.accented,
-        })
+        .map(|syll| syll.into())
         .collect()
 }
 
