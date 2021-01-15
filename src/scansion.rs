@@ -160,19 +160,34 @@ pub fn scansion(text: &str) -> String {
         .join("\n")
 }
 
+struct WeightAndAccent {
+    heavy: bool,
+    accented: bool,
+}
+
+impl std::fmt::Display for WeightAndAccent {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            fmt,
+            "{}{}",
+            if self.heavy { "m" } else { "u" },
+            if self.accented { "\u{0301}" } else { "" }
+        )
+    }
+}
+
 fn scan_syllables2(text: &str) -> Vec<String> {
-    use super::syllabify::{convert_line_to_sylls, Syllable};
+    use super::syllabify::convert_line_to_sylls;
     convert_line_to_sylls(text)
         .into_iter()
         .map(|syll| {
-            match syll {
-                Syllable(_onset, _vowel, None, false) => "u",
-                Syllable(_onset, _vowel, None, true) => "u\u{0301}",
-
-                Syllable(_onset, _vowel, Some(_coda), false) => "m",
-                Syllable(_onset, _vowel, Some(_coda), true) => "m\u{0301}",
-            }
-            .to_owned()
+            format!(
+                "{}",
+                WeightAndAccent {
+                    heavy: syll.coda.is_some(),
+                    accented: syll.accented
+                }
+            )
         })
         .collect()
 }

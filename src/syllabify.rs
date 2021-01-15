@@ -1,5 +1,10 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Syllable(pub Onset, pub Vowel, pub Option<Coda>, pub bool);
+pub struct Syllable {
+    pub onset: Onset,
+    pub vowel: Vowel,
+    pub coda: Option<Coda>,
+    pub accented: bool,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Coda {
@@ -102,7 +107,12 @@ pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
             ParserState::OnsetAndVowelAndNasalOrS(onset, vowel, accented, onset2) => {
                 if let Some((vowel2, accented2)) = vocalic(chr) {
                     // open syllable
-                    ans.push(Syllable(onset, vowel, None, accented));
+                    ans.push(Syllable {
+                        onset,
+                        vowel,
+                        coda: None,
+                        accented,
+                    });
 
                     state = ParserState::OnsetAndVowel(onset2, vowel2, accented2)
                 } else if let Some(onset3) = consonant(chr) {
@@ -113,7 +123,12 @@ pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
                     };
 
                     // closed syllable
-                    ans.push(Syllable(onset, vowel, Some(coda), accented));
+                    ans.push(Syllable {
+                        onset,
+                        vowel,
+                        coda: Some(coda),
+                        accented,
+                    });
 
                     state = ParserState::Onset(onset3)
                 } else {
@@ -133,13 +148,28 @@ pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
                         consonant(chr).unwrap(),
                     )
                 } else if let Some(new_onset) = consonant(chr) {
-                    ans.push(Syllable(onset, vowel, None, accented));
+                    ans.push(Syllable {
+                        onset,
+                        vowel,
+                        coda: None,
+                        accented,
+                    });
                     state = ParserState::Onset(new_onset)
                 } else if chr == 'h' {
-                    ans.push(Syllable(onset, vowel, Some(Coda::H), accented));
+                    ans.push(Syllable {
+                        onset,
+                        vowel,
+                        coda: Some(Coda::H),
+                        accented,
+                    });
                     state = ParserState::Nothing
                 } else if chr == ':' || chr == ';' {
-                    ans.push(Syllable(onset, vowel, Some(Coda::Long), accented));
+                    ans.push(Syllable {
+                        onset,
+                        vowel,
+                        coda: Some(Coda::Long),
+                        accented,
+                    });
                     state = ParserState::Nothing
                 } else {
                     panic!(
@@ -156,9 +186,12 @@ pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
     match state {
         ParserState::Nothing => {}
         ParserState::Onset(onset) => panic!("The line ended with an onset {:?}", onset),
-        ParserState::OnsetAndVowel(onset, vowel, accented) => {
-            ans.push(Syllable(onset, vowel, None, accented))
-        }
+        ParserState::OnsetAndVowel(onset, vowel, accented) => ans.push(Syllable {
+            onset,
+            vowel,
+            coda: None,
+            accented,
+        }),
         ParserState::OnsetAndVowelAndNasalOrS(..) => panic!("The line ended with a nasal"),
     }
     ans

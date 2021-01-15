@@ -84,12 +84,6 @@ fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
             .collect::<Vec<_>>();
 
         write_file(&mut file, &converted, date)?;
-
-        let converted2 = content
-            .iter()
-            .map(|a| syllabify::convert_to_sylls(a))
-            .collect::<Vec<_>>();
-        // println!("{:?}", converted2)
     }
     {
         let mut file = File::create(format!("docs/{}-scansion.html", date))?;
