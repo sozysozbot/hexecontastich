@@ -9,10 +9,10 @@ extern crate regex;
 mod convert;
 mod scansion;
 
+use log::info;
 use std::error::Error;
 use std::fs::File;
 use std::io::Write;
-use log::info;
 
 fn main() -> Result<(), Box<dyn Error>> {
     use itertools::Itertools;
@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     info!("Writing index.html");
     let mut file = File::create("docs/index.html")?;
-    write!(file, "<!DOCTYPE html><head><title>Hexecontastich</title></head><body><h2>Hexecontastich</h2>\n<ul>\n{}\n</ul>\n</body>", html)?;
+    write!(file, "<!DOCTYPE html><head><title>Hexecontastich</title></head><body><h2>Hexecontastich</h2><img src=\"img/hexecontastich.jpg\" width=\"300\">\n<ul>\n{}\n</ul>\n</body>", html)?;
 
     let progress = sorted
         .iter()
