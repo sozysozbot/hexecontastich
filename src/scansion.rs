@@ -182,16 +182,16 @@ fn crop_letters(s: &str, pos: usize) -> &str {
 
 fn scan_one_syllable(text: &str) -> (&'static str, &str) {
     lazy_static! {
-        static ref M1: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou][:;h])").unwrap();
-        static ref M2: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou]ss)").unwrap();
-        static ref M3: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou][nm]$)").unwrap();
-        static ref M4: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou][nm][^AEIOUaeiou])").unwrap();
-        static ref MACC1: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU][:;h])").unwrap();
-        static ref MACC2: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU]ss)").unwrap();
-        static ref MACC3: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU][nm]$)").unwrap();
-        static ref MACC4: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU][nm][^AEIOUaeiou])").unwrap();
-        static ref U: Regex = Regex::new(r"^([pbmtdrnskg'][aeiou])").unwrap();
-        static ref UACC1: Regex = Regex::new(r"^([pbmtdrnskg'][AEIOU])").unwrap();
+        static ref M1: Regex = Regex::new(r"^([pbmtdrnskg'q][aeiou][:;h])").unwrap();
+        static ref M2: Regex = Regex::new(r"^([pbmtdrnskg'q][aeiou]ss)").unwrap();
+        static ref M3: Regex = Regex::new(r"^([pbmtdrnskg'q][aeiou][nm]$)").unwrap();
+        static ref M4: Regex = Regex::new(r"^([pbmtdrnskg'q][aeiou][nm][^AEIOUaeiou])").unwrap();
+        static ref MACC1: Regex = Regex::new(r"^([pbmtdrnskg'q][AEIOU][:;h])").unwrap();
+        static ref MACC2: Regex = Regex::new(r"^([pbmtdrnskg'q][AEIOU]ss)").unwrap();
+        static ref MACC3: Regex = Regex::new(r"^([pbmtdrnskg'q][AEIOU][nm]$)").unwrap();
+        static ref MACC4: Regex = Regex::new(r"^([pbmtdrnskg'q][AEIOU][nm][^AEIOUaeiou])").unwrap();
+        static ref U: Regex = Regex::new(r"^([pbmtdrnskg'q][aeiou])").unwrap();
+        static ref UACC1: Regex = Regex::new(r"^([pbmtdrnskg'q][AEIOU])").unwrap();
         static ref UACC2: Regex = Regex::new(r"^([bdrg]\*[AEIOU])").unwrap();
     }
     if M1.find(text).is_some()

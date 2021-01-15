@@ -129,7 +129,7 @@ fn convert_line(text: &str) -> String {
     let mut ans = vec![];
     for (i, chr) in text.clone().into_iter().enumerate() {
         match chr {
-            '\'' => ans.push("ʔ"),
+            '\'' | 'q' => ans.push("ʔ"),
 
             'p' => {
                 if ans.last() == Some(&"n") || ans.last() == Some(&"m") {
