@@ -176,18 +176,13 @@ impl std::fmt::Display for WeightAndAccent {
     }
 }
 
-fn scan_syllables2(text: &str) -> Vec<String> {
+fn scan_syllables2(text: &str) -> Vec<WeightAndAccent> {
     use super::syllabify::convert_line_to_sylls;
     convert_line_to_sylls(text)
         .into_iter()
-        .map(|syll| {
-            format!(
-                "{}",
-                WeightAndAccent {
-                    heavy: syll.coda.is_some(),
-                    accented: syll.accented
-                }
-            )
+        .map(|syll| WeightAndAccent {
+            heavy: syll.coda.is_some(),
+            accented: syll.accented,
         })
         .collect()
 }
@@ -200,17 +195,26 @@ fn scansion_line(text: &str) -> String {
     let mut i = 0;
 
     // extrametric `úmuu` or `úmm`
-    if arr.len() >= 4 && arr[0] == "u\u{0301}" && arr[1] == "m" && arr[2] == "u" && arr[3] == "u" {
+    if arr.len() >= 4
+        && format!("{}", arr[0]) == "u\u{0301}"
+        && format!("{}", arr[1]) == "m"
+        && format!("{}", arr[2]) == "u"
+        && format!("{}", arr[3]) == "u"
+    {
         ans += &format!("{} {}{}{} ", arr[0], arr[1], arr[2], arr[3]);
         i = 4;
-    } else if arr.len() >= 3 && arr[0] == "u\u{0301}" && arr[1] == "m" && arr[2] == "m" {
+    } else if arr.len() >= 3
+        && format!("{}", arr[0]) == "u\u{0301}"
+        && format!("{}", arr[1]) == "m"
+        && format!("{}", arr[2]) == "m"
+    {
         ans += &format!("{} {}{} ", arr[0], arr[1], arr[2]);
         i = 3;
     }
 
     while i < arr.len() {
-        ans += &arr[i];
-        if arr[i].starts_with('m') {
+        ans += &format!("{}", arr[i]);
+        if arr[i].heavy {
             mora_count += 2;
         } else {
             mora_count += 1;
