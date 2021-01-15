@@ -1,4 +1,3 @@
-use regex::Regex;
 mod tests {
     #[test]
     fn it_works4() {
@@ -161,65 +160,25 @@ pub fn scansion(text: &str) -> String {
         .join("\n")
 }
 
-fn scan_syllables(mut text: &str) -> Vec<String> {
-    let mut ans = vec![];
-    loop {
-        if text.is_empty() {
-            return ans;
-        }
-        let (syl_weight, remaining) = scan_one_syllable(text);
-        ans.push(syl_weight.to_owned());
-        text = remaining;
-    }
-}
+fn scan_syllables2(text: &str) -> Vec<String> {
+    use super::syllabify::{convert_line_to_sylls, Syllable};
+    convert_line_to_sylls(text)
+        .into_iter()
+        .map(|syll| {
+            match syll {
+                Syllable(_onset, _vowel, None, false) => "u",
+                Syllable(_onset, _vowel, None, true) => "u\u{0301}",
 
-fn crop_letters(s: &str, pos: usize) -> &str {
-    match s.char_indices().nth(pos) {
-        Some((pos, _)) => &s[pos..],
-        None => "",
-    }
-}
-
-fn scan_one_syllable(text: &str) -> (&'static str, &str) {
-    lazy_static! {
-        static ref M1: Regex = Regex::new(r"^([pbmtdrnskg'q][aeiou][:;h])").unwrap();
-        static ref M2: Regex = Regex::new(r"^([pbmtdrnskg'q][aeiou]ss)").unwrap();
-        static ref M3: Regex = Regex::new(r"^([pbmtdrnskg'q][aeiou][nm]$)").unwrap();
-        static ref M4: Regex = Regex::new(r"^([pbmtdrnskg'q][aeiou][nm][^AEIOUaeiou])").unwrap();
-        static ref MACC1: Regex = Regex::new(r"^([pbmtdrnskg'q][AEIOU][:;h])").unwrap();
-        static ref MACC2: Regex = Regex::new(r"^([pbmtdrnskg'q][AEIOU]ss)").unwrap();
-        static ref MACC3: Regex = Regex::new(r"^([pbmtdrnskg'q][AEIOU][nm]$)").unwrap();
-        static ref MACC4: Regex = Regex::new(r"^([pbmtdrnskg'q][AEIOU][nm][^AEIOUaeiou])").unwrap();
-        static ref U: Regex = Regex::new(r"^([pbmtdrnskg'q][aeiou])").unwrap();
-        static ref UACC1: Regex = Regex::new(r"^([pbmtdrnskg'q][AEIOU])").unwrap();
-        static ref UACC2: Regex = Regex::new(r"^([bdrg]\*[AEIOU])").unwrap();
-    }
-    if M1.find(text).is_some()
-        || M2.find(text).is_some()
-        || M3.find(text).is_some()
-        || M4.find(text).is_some()
-    {
-        return ("m", crop_letters(text, 3));
-    } else if MACC1.find(text).is_some()
-        || MACC2.find(text).is_some()
-        || MACC3.find(text).is_some()
-        || MACC4.find(text).is_some()
-    {
-        return ("m\u{0301}", crop_letters(text, 3));
-    } else if U.find(text).is_some() {
-        return ("u", crop_letters(text, 2));
-    } else if UACC1.find(text).is_some() {
-        return ("u\u{0301}", crop_letters(text, 2));
-    } else if UACC2.find(text).is_some() {
-        // extrametricity elides the pause, leniting the plosives
-        return ("u\u{0301}", crop_letters(text, 3));
-    } else {
-        panic!("unparsable string: \"{}\"", text)
-    }
+                Syllable(_onset, _vowel, Some(_coda), false) => "m",
+                Syllable(_onset, _vowel, Some(_coda), true) => "m\u{0301}",
+            }
+            .to_owned()
+        })
+        .collect()
 }
 
 fn scansion_line(text: &str) -> String {
-    let arr = scan_syllables(text);
+    let arr = scan_syllables2(text);
     let mut ans = String::new();
     let mut mora_count = 0;
 

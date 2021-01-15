@@ -65,7 +65,7 @@ const fn vocalic(c: char) -> Option<(Vowel, bool)> {
 }
 
 #[allow(clippy::too_many_lines)]
-fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
+pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
     #[derive(Clone, Copy)]
     enum ParserState {
         Nothing,
