@@ -224,16 +224,30 @@ fn scansion_line(text: &str) -> String {
         ]
     );
 
+    let extrametric_umm = matches!(
+        &arr[..],
+        [
+            WeightAndAccent {
+                accented: true,
+                heavy: false
+            },
+            WeightAndAccent {
+                accented: false,
+                heavy: true
+            },
+            WeightAndAccent {
+                accented: false,
+                heavy: true
+            },
+            ..
+        ]
+    );
+
     // extrametric `úmuu` or `úmm`
-    if extrametric_umuu
-    {
+    if extrametric_umuu {
         ans += &format!("{} {}{}{} ", arr[0], arr[1], arr[2], arr[3]);
         i = 4;
-    } else if arr.len() >= 3
-        && format!("{}", arr[0]) == "u\u{0301}"
-        && format!("{}", arr[1]) == "m"
-        && format!("{}", arr[2]) == "m"
-    {
+    } else if extrametric_umm {
         ans += &format!("{} {}{} ", arr[0], arr[1], arr[2]);
         i = 3;
     }
