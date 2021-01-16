@@ -87,7 +87,12 @@ impl Poem {
         )
     }
 
-    fn map_lines_and_chapterize<F>(&self, mut f: F) -> Vec<String>
+    pub fn line_count(&self) -> usize {
+        let Self(poem) = &self;
+        poem.iter().map(|chapter| chapter.iter().count()).sum()
+    }
+
+    pub fn map_lines_and_chapterize<F>(&self, mut f: F) -> Vec<String>
     where
         F: FnMut(&Line) -> String,
     {
@@ -105,7 +110,7 @@ impl Poem {
 }
 
 // returns how many lines there are
-fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
+fn write_files(date: &str, content: &[&str]) -> Result<usize, Box<dyn Error>> {
     let poem = Poem::new(content);
     {
         let mut file = File::create(format!("docs/{}.html", date))?;
@@ -116,12 +121,14 @@ fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
     {
         let mut file = File::create(format!("docs/{}-scansion.html", date))?;
         let scansion = poem.map_lines_and_chapterize(scansion::to_scanned);
-        write_file(&mut file, &scansion, date)
+        write_file(&mut file, &scansion, date)?;
+
+        Ok(poem.line_count())
     }
 }
 
 // returns how many lines there are
-fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<i32, Box<dyn Error>> {
+fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<(), Box<dyn Error>> {
     let mut res = vec![];
 
     let mut line_index = 0;
@@ -169,5 +176,5 @@ fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<i32, 
         date, date, content,
     )?;
 
-    Ok(line_index)
+    Ok(())
 }
