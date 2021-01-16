@@ -14,6 +14,52 @@ use std::error::Error;
 use std::fs::File;
 use std::io::Write;
 
+fn each_raw_file(
+    entry: &std::fs::DirEntry,
+    total_lines: &mut usize,
+    map: &mut std::collections::HashMap<String, (usize, String)>,
+) -> Result<(), Box<dyn Error>> {
+    let path = entry.path();
+    if !path.is_dir() {
+        let date = entry.file_name().into_string().unwrap();
+        info!("Converting {}", date);
+        let content = std::fs::read_to_string(format!("raw/{}", date))?;
+
+        // to convert \r\n into \n
+        let content = content.lines().collect::<Vec<_>>().join("\n");
+        let cont = content.split("\n\n").collect::<Vec<_>>();
+
+        let poem = Poem::new(&cont);
+        {
+            let mut file = File::create(format!("docs/{}.html", date))?;
+            let converted = poem.map_lines_and_chapterize(|line| {
+                convert::elide_initial_glottal_stop(&line.to_ipa())
+            });
+            write_file(&mut file, &converted, &date)?;
+        }
+        {
+            let mut file = File::create(format!("docs/{}-scansion.html", date))?;
+            let scansion = poem.map_lines_and_chapterize(scansion::to_scanned);
+            write_file(&mut file, &scansion, &date)?;
+        }
+        let how_many_lines = poem.line_count();
+        let li = if how_many_lines == 60 {
+            format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
+        } else {
+            format!(
+                "    <li><a href=\"{}.html\">{}</a> (only the first {} lines are attested)</li>",
+                date, date, how_many_lines
+            )
+        };
+
+        // buggy! no guarantee that it is sorted
+        *total_lines += how_many_lines;
+        map.insert(date, (*total_lines, li));
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     use itertools::Itertools;
     use std::collections::HashMap;
@@ -24,28 +70,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut total_lines = 0;
     for entry in std::fs::read_dir("raw/")? {
         let entry = entry?;
-        let path = entry.path();
-        if !path.is_dir() {
-            let date = entry.file_name().into_string().unwrap();
-            info!("Converting {}", date);
-            let content = std::fs::read_to_string(format!("raw/{}", date))?;
-
-            // to convert \r\n into \n
-            let content = content.lines().collect::<Vec<_>>().join("\n");
-            let cont = content.split("\n\n").collect::<Vec<_>>();
-
-            let poem = Poem::new(&cont);
-            poem.write_files(&date)?;
-            let how_many_lines = poem.line_count();
-            let li = if how_many_lines == 60 {
-                format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
-            } else {
-                format!("    <li><a href=\"{}.html\">{}</a> (only the first {} lines are attested)</li>", date, date, how_many_lines)
-            };
-
-            total_lines += how_many_lines;
-            map.insert(date, (total_lines, li));
-        }
+        each_raw_file(&entry, &mut total_lines, &mut map)?;
     }
 
     info!("Processed the total of {} lines.", total_lines);
@@ -109,22 +134,6 @@ impl Poem {
                     .join("\n")
             })
             .collect::<Vec<_>>()
-    }
-
-    pub fn write_files(&self, date: &str) -> Result<(), Box<dyn Error>> {
-        {
-            let mut file = File::create(format!("docs/{}.html", date))?;
-            let converted = self.map_lines_and_chapterize(|line| {
-                convert::elide_initial_glottal_stop(&line.to_ipa())
-            });
-            write_file(&mut file, &converted, date)?;
-        }
-        {
-            let mut file = File::create(format!("docs/{}-scansion.html", date))?;
-            let scansion = self.map_lines_and_chapterize(scansion::to_scanned);
-            write_file(&mut file, &scansion, date)?;
-        }
-        Ok(())
     }
 }
 
