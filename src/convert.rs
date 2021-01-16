@@ -1,13 +1,29 @@
 use super::scansion::WeightAndAccent;
-use super::syllabify::{convert_line_to_sylls, Coda, Onset, Syllable, Vowel};
+use super::syllabify::{Coda, Onset, Syllable, Vowel};
 use crate::w;
 use log::warn;
 use regex::Regex;
 
 mod tests {
+    #[allow(dead_code)]
+    fn convert_line2(text: &str) -> String {
+        use super::*;
+        match to_ipa(&Line::new(text)) {
+            Ok(a) => a,
+            Err(e) => panic!("{}, in line `{}`", e, text),
+        }
+    }
+
+    #[allow(dead_code)]
+    fn convert(text: &str) -> String {
+        use super::*;
+        text.lines()
+            .map(|line| elide_initial_glottal_stop(&convert_line2(line)))
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
     #[test]
     fn it_works3() {
-        use super::*;
         assert_eq!(
             convert(
                 "
@@ -50,7 +66,6 @@ me̞ːˈsiɾo̞ɣɑːʔɑːˈmɑsəɣe̞ːˈniː
 
     #[test]
     fn it_works2() {
-        use super::*;
         assert_eq!(
             convert(
                 "
@@ -81,7 +96,6 @@ sɑːsɑːˈβɑse̞ɾisinɑːməso̞ˈɾində"
 
     #[test]
     fn it_works() {
-        use super::*;
         assert_eq!(
             convert(
                 "
@@ -120,8 +134,9 @@ biːɾine̞ʔɑːˈɾɑkiɣɑːnɑːˈʔihti
     }
 }
 
-fn convert_line2(text: &str) -> String {
-    let sylls = convert_line_to_sylls(text);
+use super::Line;
+
+pub fn to_ipa(Line(sylls): &Line) -> Result<String, &'static str> {
     let scansions: Vec<WeightAndAccent> = sylls.iter().map(|a| (*a).into()).collect();
     let mut ans = String::new();
     for (i, syll) in sylls.clone().into_iter().enumerate() {
@@ -167,9 +182,9 @@ fn convert_line2(text: &str) -> String {
             Some(Coda::H) => match sylls[i + 1].onset {
                 Onset::K | Onset::T | Onset::P => "h",
                 Onset::S => "s",
-                Onset::G | Onset::B | Onset::N | Onset::M | Onset::Q => {
-                    panic!("Aspirations should not be followed by a glottal stop or a voiced consonant, in line {}", text)
-                }
+                Onset::G | Onset::B | Onset::N | Onset::M | Onset::Q => return Err(
+                    "Aspirations should not be followed by a glottal stop or a voiced consonant",
+                ),
                 Onset::R => {
                     // `/ɾ/` + unaccented short vowel + `/ɾ/` turns the first `/ɾ/` into `[d]`
                     if !sylls[i + 1].accented
@@ -184,7 +199,7 @@ fn convert_line2(text: &str) -> String {
                         warn!("Rare instance of h+d");
                         "h"
                     } else {
-                        panic!("Aspirations should not be followed by a glottal stop or a voiced consonant, in line {}", text)
+                        return Err("Aspirations should not be followed by a glottal stop or a voiced consonant");
                     }
                 }
             },
@@ -196,9 +211,7 @@ fn convert_line2(text: &str) -> String {
                     "n"
                 }
                 Onset::P | Onset::B | Onset::M => "m",
-                Onset::Q => {
-                    panic!("Nasals should not be followed by a glottal stop")
-                }
+                Onset::Q => return Err("Nasals should not be followed by a glottal stop"),
             },
         };
         let vowel = match syll.vowel {
@@ -221,21 +234,14 @@ fn convert_line2(text: &str) -> String {
         };
         ans += &format!("{}{}{}{}", accent, onset, vowel, coda)
     }
-    ans
+    Ok(ans)
 }
 
-fn elide_initial_glottal_stop(ans: &str) -> String {
+pub fn elide_initial_glottal_stop(ans: &str) -> String {
     lazy_static! {
         static ref RG1: Regex = Regex::new(r"^ʔɑ([mnŋ])([^ˈ])").unwrap();
         static ref RG2: Regex = Regex::new(r"^ʔɑː([^ˈ])").unwrap();
     }
     let stage1 = RG1.replace_all(ans, "ɑ$1$2");
     RG2.replace_all(&stage1, "ɑː$1").to_string()
-}
-
-pub fn convert(text: &str) -> String {
-    text.lines()
-        .map(|line| elide_initial_glottal_stop(&convert_line2(line)))
-        .collect::<Vec<_>>()
-        .join("\n")
 }

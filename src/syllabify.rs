@@ -196,9 +196,3 @@ pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
     }
     ans
 }
-
-pub fn convert_to_sylls(text: &str) -> Vec<Vec<Syllable>> {
-    text.lines()
-        .map(|line| convert_line_to_sylls(line))
-        .collect::<Vec<_>>()
-}

@@ -1,7 +1,21 @@
 mod tests {
+    use super::*;
+
+    #[allow(dead_code)]
+    fn scansion_line(text: &str) -> String {
+        use super::super::Line;
+        to_scanned(Line::new(text))
+    }
+
+    #[allow(dead_code)]
+    fn scansion(text: &str) -> String {
+        text.lines()
+            .map(|line| scansion_line(line))
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
     #[test]
     fn it_works4() {
-        use super::*;
         assert_eq!(
             scansion(
                 "
@@ -40,7 +54,6 @@ mm ḿuu ḿuu ḿu"
 
     #[test]
     fn it_works3() {
-        use super::*;
         assert_eq!(
             scansion(
                 "
@@ -83,7 +96,6 @@ ú muu ḿuu ḿuu ḿu"
 
     #[test]
     fn it_works2() {
-        use super::*;
         assert_eq!(
             scansion(
                 "
@@ -114,7 +126,6 @@ mm úuuu muu ḿu"
 
     #[test]
     fn it_works() {
-        use super::*;
         assert_eq!(
             scansion(
                 "
@@ -151,13 +162,6 @@ muu múu mm ḿu
 ḿuu ḿuu ḿuu ḿu"
         )
     }
-}
-
-pub fn scansion(text: &str) -> String {
-    text.lines()
-        .map(|line| scansion_line(line))
-        .collect::<Vec<_>>()
-        .join("\n")
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -214,16 +218,10 @@ impl std::fmt::Display for WeightAndAccent {
     }
 }
 
-fn scan_syllables2(text: &str) -> Vec<WeightAndAccent> {
-    use super::syllabify::convert_line_to_sylls;
-    convert_line_to_sylls(text)
-        .into_iter()
-        .map(|syll| syll.into())
-        .collect()
-}
-
-fn scansion_line(text: &str) -> String {
-    let arr = scan_syllables2(text);
+pub fn to_scanned(line: super::Line) -> String {
+    use super::Line;
+    let Line(vec) = line;
+    let arr: Vec<WeightAndAccent> = vec.into_iter().map(|syll| syll.into()).collect();
     let mut ans = String::new();
     let mut mora_count = 0;
 

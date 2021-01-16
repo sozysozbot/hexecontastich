@@ -74,13 +74,44 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+// struct Poem(Vec<Vec<Line>>);
+pub struct Line(pub Vec<syllabify::Syllable>);
+
+impl Line {
+    fn new(line: &str) -> Self {
+        Self(syllabify::convert_line_to_sylls(line))
+    }
+}
+
+/*impl Poem {
+    fn new(content: &[&str]) -> Self {
+        Self(
+            content
+                .iter()
+                .map(|a| a.lines().map(Line::new).collect::<Vec<_>>())
+                .collect::<Vec<_>>(),
+        )
+    }
+}*/
+
 // returns how many lines there are
 fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
     {
         let mut file = File::create(format!("docs/{}.html", date))?;
         let converted = content
             .iter()
-            .map(|a| convert::convert(a))
+            .map(|a| {
+                a.lines()
+                    .map(|line| {
+                        let ipa = match convert::to_ipa(&Line::new(line)) {
+                            Ok(a) => a,
+                            Err(e) => panic!("{}, in line `{}`", e, line),
+                        };
+                        convert::elide_initial_glottal_stop(&ipa)
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })
             .collect::<Vec<_>>();
 
         write_file(&mut file, &converted, date)?;
@@ -89,7 +120,12 @@ fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
         let mut file = File::create(format!("docs/{}-scansion.html", date))?;
         let scansion = content
             .iter()
-            .map(|a| scansion::scansion(a))
+            .map(|a| {
+                a.lines()
+                    .map(|line| scansion::to_scanned(Line::new(line)))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })
             .collect::<Vec<_>>();
 
         write_file(&mut file, &scansion, date)
