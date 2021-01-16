@@ -198,8 +198,8 @@ macro_rules! w {
     };
 }
 
-impl From<super::syllabify::Syllable> for WeightAndAccent {
-    fn from(a: super::syllabify::Syllable) -> Self {
+impl From<super::line::syllabify::Syllable> for WeightAndAccent {
+    fn from(a: super::line::syllabify::Syllable) -> Self {
         Self {
             heavy: a.coda.is_some(),
             accented: a.accented,

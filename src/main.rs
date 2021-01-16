@@ -8,7 +8,6 @@ extern crate regex;
 
 mod convert;
 mod scansion;
-mod syllabify;
 
 use log::info;
 use std::error::Error;
@@ -75,37 +74,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 struct Poem(Vec<Vec<Line>>);
-pub struct Line(Vec<syllabify::Syllable>);
-
-impl Line {
-    #[must_use]
-    pub fn new(line: &str) -> Self {
-        let ans = Self(syllabify::convert_line_to_sylls(line));
-
-        // FIXME: this duplicates the "rare instance" warnings
-        match convert::to_ipa(&ans) {
-            Err(e) => panic!("{}, in line `{}`", e, line),
-            Ok(_) => {}
-        }
-        ans
-    }
-
-    #[must_use]
-    pub fn to_ipa(&self) -> String {
-        convert::to_ipa(self).unwrap()
-    }
-
-    // clippy is currently buggy (https://github.com/rust-lang/rust-clippy/issues/4979)
-    #[allow(clippy::missing_const_for_fn)]
-    #[must_use]
-    pub fn into_vec(self) -> Vec<syllabify::Syllable> {
-        self.0
-    }
-
-    const fn as_vec(&self) -> &Vec<syllabify::Syllable> {
-        &self.0
-    }
-}
+use line::Line;
+pub mod line;
 
 impl Poem {
     pub fn new(content: &[&str]) -> Self {
