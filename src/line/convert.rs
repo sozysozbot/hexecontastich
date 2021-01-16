@@ -1,5 +1,5 @@
-use super::syllabify::{Coda, Onset, Syllable, Vowel};
 use super::super::scansion::WeightAndAccent;
+use super::syllabify::{Coda, Onset, Syllable, Vowel};
 use crate::w;
 use log::warn;
 use regex::Regex;

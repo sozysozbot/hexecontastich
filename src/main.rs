@@ -72,7 +72,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let sorted = map.into_iter().sorted().collect::<Vec<_>>();
     let html = sorted
         .iter()
-        .map(|(_date, (_tot_lines, li))| li.to_owned())
+        .map(|(_date, (_, li))| li.to_owned())
         .collect::<Vec<_>>()
         .join("\n");
 
@@ -90,7 +90,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .collect::<Vec<_>>()
         .join("\n");
-    
+
     info!("Writing progress.tsv");
     let mut file = File::create("progress.tsv")?;
     writeln!(file, "{}", progress)?;
@@ -135,11 +135,13 @@ impl Poem {
 }
 
 fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<(), Box<dyn Error>> {
-    let mut res = vec![];
-
     let mut line_index = 0;
-    for u in converted.iter() {
-        res.push(
+    let mut content = String::new();
+    for (i, u) in converted.iter().enumerate() {
+        content += &format!(
+            "{}. <div id=\"res{}\" class=\"poem_block\">\n{}</div><br>\n\n",
+            i + 1,
+            i + 1,
             u.lines()
                 .filter_map(|a| {
                     if a.is_empty() {
@@ -157,18 +159,7 @@ fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<(), B
                     }
                 })
                 .collect::<Vec<_>>()
-                .join("\n"),
-        );
-    }
-
-    let mut content = String::new();
-
-    for (i, r) in res.iter().enumerate() {
-        content += &format!(
-            "{}. <div id=\"res{}\" class=\"poem_block\">\n{}</div><br>\n\n",
-            i + 1,
-            i + 1,
-            r
+                .join("\n")
         )
     }
 
