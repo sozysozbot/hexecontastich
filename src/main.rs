@@ -35,8 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let cont = content.split("\n\n").collect::<Vec<_>>();
 
             let poem = Poem::new(&cont);
-
-            write_files(&date, &poem)?;
+            poem.write_files(&date)?;
             let how_many_lines = poem.line_count();
             let li = if how_many_lines == 60 {
                 format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
@@ -111,25 +110,24 @@ impl Poem {
             })
             .collect::<Vec<_>>()
     }
+
+    pub fn write_files(&self, date: &str) -> Result<(), Box<dyn Error>> {
+        {
+            let mut file = File::create(format!("docs/{}.html", date))?;
+            let converted = self.map_lines_and_chapterize(|line| {
+                convert::elide_initial_glottal_stop(&line.to_ipa())
+            });
+            write_file(&mut file, &converted, date)?;
+        }
+        {
+            let mut file = File::create(format!("docs/{}-scansion.html", date))?;
+            let scansion = self.map_lines_and_chapterize(scansion::to_scanned);
+            write_file(&mut file, &scansion, date)?;
+        }
+        Ok(())
+    }
 }
 
-// returns how many lines there are
-fn write_files(date: &str, poem: &Poem) -> Result<(), Box<dyn Error>> {
-    {
-        let mut file = File::create(format!("docs/{}.html", date))?;
-        let converted = poem
-            .map_lines_and_chapterize(|line| convert::elide_initial_glottal_stop(&line.to_ipa()));
-        write_file(&mut file, &converted, date)?;
-    }
-    {
-        let mut file = File::create(format!("docs/{}-scansion.html", date))?;
-        let scansion = poem.map_lines_and_chapterize(scansion::to_scanned);
-        write_file(&mut file, &scansion, date)?;
-    }
-    Ok(())
-}
-
-// returns how many lines there are
 fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<(), Box<dyn Error>> {
     let mut res = vec![];
 
