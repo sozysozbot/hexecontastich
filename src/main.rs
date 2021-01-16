@@ -33,7 +33,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             // to convert \r\n into \n
             let content = content.lines().collect::<Vec<_>>().join("\n");
             let cont = content.split("\n\n").collect::<Vec<_>>();
-            let how_many_lines = write_files(&date, &cont)?;
+
+            let poem = Poem::new(&cont);
+
+            write_files(&date, &poem)?;
+            let how_many_lines = poem.line_count();
             let li = if how_many_lines == 60 {
                 format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
             } else {
@@ -110,8 +114,7 @@ impl Poem {
 }
 
 // returns how many lines there are
-fn write_files(date: &str, content: &[&str]) -> Result<usize, Box<dyn Error>> {
-    let poem = Poem::new(content);
+fn write_files(date: &str, poem: &Poem) -> Result<(), Box<dyn Error>> {
     {
         let mut file = File::create(format!("docs/{}.html", date))?;
         let converted = poem
@@ -122,9 +125,8 @@ fn write_files(date: &str, content: &[&str]) -> Result<usize, Box<dyn Error>> {
         let mut file = File::create(format!("docs/{}-scansion.html", date))?;
         let scansion = poem.map_lines_and_chapterize(scansion::to_scanned);
         write_file(&mut file, &scansion, date)?;
-
-        Ok(poem.line_count())
     }
+    Ok(())
 }
 
 // returns how many lines there are
