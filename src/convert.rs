@@ -1,4 +1,9 @@
+use super::scansion::WeightAndAccent;
+use super::syllabify::{convert_line_to_sylls, Coda, Onset, Syllable, Vowel};
+use crate::w;
+use log::warn;
 use regex::Regex;
+
 mod tests {
     #[test]
     fn it_works3() {
@@ -115,45 +120,18 @@ biːɾine̞ʔɑːˈɾɑkiɣɑːnɑːˈʔihti
     }
 }
 
-pub fn second_from_last_mut<T>(a: &mut [T]) -> Option<&mut T> {
-    if let [.., snd_from_last, _] = a {
-        Some(snd_from_last)
-    } else {
-        None
-    }
-}
-
-#[allow(clippy::too_many_lines)]
 fn convert_line2(text: &str) -> String {
-    use super::scansion::WeightAndAccent;
-    use super::syllabify::{convert_line_to_sylls, Coda, Onset, Syllable, Vowel};
-    use crate::w;
-    use log::warn;
     let sylls = convert_line_to_sylls(text);
     let scansions: Vec<WeightAndAccent> = sylls.iter().map(|a| (*a).into()).collect();
-
     let mut ans = String::new();
     for (i, syll) in sylls.clone().into_iter().enumerate() {
         let accent = if syll.accented { "ˈ" } else { "" };
-
-        let is_plosive_because_of_preceding_nasal = i > 0
-            && matches!(
-                sylls.get(i - 1),
-                Some(Syllable {
-                    coda: Some(Coda::Nasal),
-                    ..
-                })
-            );
-
-        let is_plosive_because_of_unlenited_beginning = i == 0
-            && !matches!(
-                &scansions[..],
-                [w!('U'), w!('m'), w!('u'), w!('u'), ..] | [w!('U'), w!('m'), w!('m'), ..]
-            );
-
-        let is_plosive =
-            is_plosive_because_of_preceding_nasal || is_plosive_because_of_unlenited_beginning;
-
+        let is_plosive = (i > 0 && matches!(sylls[i - 1].coda, Some(Coda::Nasal)))
+            || (i == 0
+                && !matches!(
+                    &scansions[..],
+                    [w!('U'), w!('m'), w!('u'), w!('u'), ..] | [w!('U'), w!('m'), w!('m'), ..]
+                ));
         let onset = match (is_plosive, syll.onset) {
             (_, Onset::T) => "t",
             (_, Onset::K) => "k",
@@ -169,8 +147,7 @@ fn convert_line2(text: &str) -> String {
             (true, Onset::R) => "d",
             (false, Onset::R) => {
                 // `/ɾ/` + unaccented short vowel + `/ɾ/` turns the first `/ɾ/` into `[d]`
-                if !syll.accented
-                    && syll.coda.is_none()
+                if WeightAndAccent::from(syll) == w!('u')
                     && matches!(
                         sylls.get(i + 1),
                         Some(Syllable {
@@ -184,7 +161,6 @@ fn convert_line2(text: &str) -> String {
                 }
             }
         };
-
         let coda = match syll.coda {
             None => "",
             Some(Coda::Long) => "ː",
@@ -221,14 +197,10 @@ fn convert_line2(text: &str) -> String {
                 }
                 Onset::P | Onset::B | Onset::M => "m",
                 Onset::Q => {
-                    panic!(
-                        "Nasals should not be followed by a glottal stop, in line {}",
-                        text
-                    )
+                    panic!("Nasals should not be followed by a glottal stop")
                 }
             },
         };
-
         let vowel = match syll.vowel {
             Vowel::E => "e̞",
             Vowel::O => "o̞",
@@ -247,185 +219,23 @@ fn convert_line2(text: &str) -> String {
                 }
             },
         };
-
         ans += &format!("{}{}{}{}", accent, onset, vowel, coda)
     }
-
-    let stage0 = ans;
-    lazy_static! {
-        static ref RG1: Regex = Regex::new(r"^ʔɑ([mnŋ])([^ˈ])").unwrap();
-        static ref RG2: Regex = Regex::new(r"^ʔɑː([^ˈ])").unwrap();
-    }
-    let stage1 = RG1.replace_all(&stage0, "ɑ$1$2");
-    RG2.replace_all(&stage1, "ɑː$1").to_string()
+    ans
 }
 
-#[allow(clippy::too_many_lines)]
-fn convert_line(text: &str) -> String {
-    let text: Vec<char> = text.chars().collect();
-    let mut ans = vec![];
-    for (i, chr) in text.clone().into_iter().enumerate() {
-        match chr {
-            '\'' | 'q' => ans.push("ʔ"),
-
-            'p' => {
-                if ans.last() == Some(&"n") || ans.last() == Some(&"m") {
-                    *(ans.last_mut().unwrap()) = "m";
-                }
-                ans.push("p");
-            }
-            't' => ans.push("t"),
-            'k' => {
-                if ans.last() == Some(&"n") || ans.last() == Some(&"m") {
-                    *(ans.last_mut().unwrap()) = "ŋ";
-                }
-                ans.push("k")
-            }
-            's' => ans.push("s"),
-            'n' => {
-                // if closed syllable, ə becomes ɑ, except when the next syllable is accented
-                if ans.last() == Some(&"ə") {
-                    // closed syllable?
-                    if text.len() == i + 1
-                    /* end of a line */
-                    || (!vec!['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'].contains(&text[i + 1]) /* consonant follows */
-                        && !vec!['A', 'E', 'I', 'O', 'U'].contains(&text[i + 2])
-                /* accented vowel does not follow */)
-                    {
-                        *(ans.last_mut().unwrap()) = "ɑ"
-                    }
-                }
-                ans.push("n")
-            }
-            'm' => {
-                // if closed syllable, ə becomes ɑ, except when the next syllable is accented
-                if ans.last() == Some(&"ə") {
-                    // closed syllable?
-                    if text.len() == i + 1 /* end of a line */
-                    || (!vec!['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'].contains(&text[i + 1]) /* consonant follows */
-                        && !vec!['A', 'E', 'I', 'O', 'U'].contains(&text[i + 2])
-                /* accented vowel does not follow */)
-                    {
-                        *(ans.last_mut().unwrap()) = "ɑ"
-                    }
-                }
-                ans.push("m")
-            }
-
-            // a workaround for the case where the extrametricity elides the pause and lenites the plosives.
-            '*' => {
-                if ans.last() == Some(&"b") {
-                    *(ans.last_mut().unwrap()) = "β";
-                } else if ans.last() == Some(&"ɡ") {
-                    *(ans.last_mut().unwrap()) = "ɣ";
-                } else if ans.last() == Some(&"d") {
-                    *(ans.last_mut().unwrap()) = "ɾ"
-                }
-            }
-
-            'b' => {
-                if ans.is_empty() {
-                    ans.push("b");
-                } else if ans.last() == Some(&"n") || ans.last() == Some(&"m") {
-                    *(ans.last_mut().unwrap()) = "m";
-                    ans.push("b");
-                } else {
-                    ans.push("β");
-                }
-            }
-
-            'g' => {
-                if ans.is_empty() {
-                    ans.push("ɡ");
-                } else if ans.last() == Some(&"n") {
-                    *(ans.last_mut().unwrap()) = "ŋ";
-                    ans.push("ɡ");
-                } else {
-                    ans.push("ɣ");
-                }
-            }
-
-            'd' | 'r' => {
-                if ans.is_empty()
-                    || ans.last() == Some(&"n")
-                    || (vec!['a', 'e', 'i', 'o', 'u'].contains(&text[i + 1])
-                        && text.len() != i + 2
-                        && vec!['d', 'r'].contains(&text[i + 2]))
-                {
-                    // `/ɾ/` + unaccented short vowel + `/ɾ/` turns the first `/ɾ/` into `[d]`
-                    ans.push("d");
-                } else {
-                    ans.push("ɾ");
-                }
-            }
-
-            'e' => ans.push("e̞"),
-            'o' => ans.push("o̞"),
-            'i' => ans.push("i"),
-            'u' => ans.push("u"),
-            'h' => ans.push("h"),
-            ':' | ';' => {
-                if ans.last() == Some(&"ə") {
-                    *(ans.last_mut().unwrap()) = "ɑ"
-                }
-                ans.push("ː")
-            }
-
-            'a' => ans.push("ə"),
-
-            // accentuated vowel: must put the stress mark before the consonant
-            'I' => {
-                ans.push(ans[ans.len() - 1]); // duplicate the consonant
-                *(second_from_last_mut(&mut ans).unwrap()) = "ˈ"; // overwrite the first of the duplicated consonant with an accent mark
-                ans.push("i")
-            }
-
-            'E' => {
-                ans.push(ans[ans.len() - 1]); // duplicate the consonant
-                *(second_from_last_mut(&mut ans).unwrap()) = "ˈ"; // overwrite the first of the duplicated consonant with an accent mark
-                ans.push("e̞")
-            }
-
-            'O' => {
-                ans.push(ans[ans.len() - 1]); // duplicate the consonant
-                *(second_from_last_mut(&mut ans).unwrap()) = "ˈ"; // overwrite the first of the duplicated consonant with an accent mark
-                ans.push("o̞")
-            }
-
-            'U' => {
-                ans.push(ans[ans.len() - 1]); // duplicate the consonant
-                *(second_from_last_mut(&mut ans).unwrap()) = "ˈ"; // overwrite the first of the duplicated consonant with an accent mark
-                ans.push("u")
-            }
-
-            'A' => {
-                ans.push(ans[ans.len() - 1]); // duplicate the consonant
-                *(second_from_last_mut(&mut ans).unwrap()) = "ˈ"; // overwrite the first of the duplicated consonant with an accent mark
-                ans.push("ɑ")
-            }
-
-            _ => {
-                panic!("Unexpected character {}", chr)
-            }
-        }
-    }
-    let stage0 = ans.join("");
+fn elide_initial_glottal_stop(ans: &str) -> String {
     lazy_static! {
         static ref RG1: Regex = Regex::new(r"^ʔɑ([mnŋ])([^ˈ])").unwrap();
         static ref RG2: Regex = Regex::new(r"^ʔɑː([^ˈ])").unwrap();
     }
-    let stage1 = RG1.replace_all(&stage0, "ɑ$1$2");
+    let stage1 = RG1.replace_all(ans, "ɑ$1$2");
     RG2.replace_all(&stage1, "ɑː$1").to_string()
 }
 
 pub fn convert(text: &str) -> String {
     text.lines()
-        .map(|line| {
-            let l1 = convert_line(line);
-            let l2 = convert_line2(line);
-            assert_eq!(l1, l2);
-            l1
-        })
+        .map(|line| elide_initial_glottal_stop(&convert_line2(line)))
         .collect::<Vec<_>>()
         .join("\n")
 }
