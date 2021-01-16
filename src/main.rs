@@ -16,7 +16,6 @@ use std::io::Write;
 
 fn each_raw_file(
     entry: &std::fs::DirEntry,
-    total_lines: &mut usize,
     map: &mut std::collections::HashMap<String, (usize, String)>,
 ) -> Result<(), Box<dyn Error>> {
     let path = entry.path();
@@ -52,9 +51,7 @@ fn each_raw_file(
             )
         };
 
-        // buggy! no guarantee that it is sorted
-        *total_lines += how_many_lines;
-        map.insert(date, (*total_lines, li));
+        map.insert(date, (how_many_lines, li));
     }
 
     Ok(())
@@ -67,13 +64,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
     let mut map = HashMap::new();
-    let mut total_lines = 0;
     for entry in std::fs::read_dir("raw/")? {
         let entry = entry?;
-        each_raw_file(&entry, &mut total_lines, &mut map)?;
+        each_raw_file(&entry, &mut map)?;
     }
-
-    info!("Processed the total of {} lines.", total_lines);
 
     let sorted = map.into_iter().sorted().collect::<Vec<_>>();
     let html = sorted
@@ -86,18 +80,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut file = File::create("docs/index.html")?;
     write!(file, "<!DOCTYPE html><head><title>Hexecontastich</title></head><body><h2>Hexecontastich</h2><img src=\"img/hexecontastich.jpg\" width=\"300\">\n<ul>\n{}\n</ul>\n</body>", html)?;
 
+    let mut total_lines = 0;
     let progress = sorted
         .iter()
-        .map(|(date, (tot_lines, _li))| {
+        .map(|(date, (num_of_lines, _li))| {
             let date = date.split('-').collect::<Vec<_>>()[0..=2].join("/");
-            format!("{}\t{}", date, tot_lines)
+            total_lines += num_of_lines;
+            format!("{}\t{}", date, total_lines)
         })
         .collect::<Vec<_>>()
         .join("\n");
+    
     info!("Writing progress.tsv");
     let mut file = File::create("progress.tsv")?;
     writeln!(file, "{}", progress)?;
-
+    info!("Processed the total of {} lines.", total_lines);
     Ok(())
 }
 
