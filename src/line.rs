@@ -1,7 +1,7 @@
-use super::convert;
 pub struct Line(Vec<syllabify::Syllable>);
 
 pub mod syllabify;
+mod convert;
 
 impl Line {
     #[must_use]
