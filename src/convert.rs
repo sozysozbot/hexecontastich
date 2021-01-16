@@ -1,5 +1,5 @@
-use super::scansion::WeightAndAccent;
 use super::line::syllabify::{Coda, Onset, Syllable, Vowel};
+use super::scansion::WeightAndAccent;
 use crate::w;
 use log::warn;
 use regex::Regex;
@@ -8,7 +8,7 @@ mod tests {
     #[allow(dead_code)]
     fn convert_line2(text: &str) -> String {
         use super::*;
-        match to_ipa(&Line::new(text)) {
+        match to_ipa(&Line::new(text), false) {
             Ok(a) => a,
             Err(e) => panic!("{}, in line `{}`", e, text),
         }
@@ -136,7 +136,7 @@ biːɾine̞ʔɑːˈɾɑkiɣɑːnɑːˈʔihti
 
 use super::Line;
 
-pub fn to_ipa(line: &Line) -> Result<String, &'static str> {
+pub fn to_ipa(line: &Line, warn: bool) -> Result<String, &'static str> {
     let sylls = line.as_vec();
     let scansions: Vec<WeightAndAccent> = sylls.iter().map(|a| (*a).into()).collect();
     let mut ans = String::new();
@@ -197,7 +197,9 @@ pub fn to_ipa(line: &Line) -> Result<String, &'static str> {
                             })
                         )
                     {
-                        warn!("Rare instance of h+d");
+                        if warn {
+                            warn!("Rare instance of h+d");
+                        }
                         "h"
                     } else {
                         return Err("Aspirations should not be followed by a glottal stop or a voiced consonant");
@@ -208,7 +210,9 @@ pub fn to_ipa(line: &Line) -> Result<String, &'static str> {
                 Onset::K | Onset::G => "ŋ",
                 Onset::T | Onset::R | Onset::N => "n",
                 Onset::S => {
-                    warn!("Rare instance of n+s");
+                    if warn {
+                        warn!("Rare instance of n+s");
+                    }
                     "n"
                 }
                 Onset::P | Onset::B | Onset::M => "m",

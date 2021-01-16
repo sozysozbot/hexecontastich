@@ -8,8 +8,7 @@ impl Line {
     pub fn new(line: &str) -> Self {
         let ans = Self(syllabify::convert_line_to_sylls(line));
 
-        // FIXME: this duplicates the "rare instance" warnings
-        match convert::to_ipa(&ans) {
+        match convert::to_ipa(&ans, true) {
             Err(e) => panic!("{}, in line `{}`", e, line),
             Ok(_) => {}
         }
@@ -18,7 +17,7 @@ impl Line {
 
     #[must_use]
     pub fn to_ipa(&self) -> String {
-        convert::to_ipa(self).unwrap()
+        convert::to_ipa(self, false).unwrap()
     }
 
     // clippy is currently buggy (https://github.com/rust-lang/rust-clippy/issues/4979)
