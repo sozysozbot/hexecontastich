@@ -4,7 +4,7 @@ mod tests {
     #[allow(dead_code)]
     fn scansion_line(text: &str) -> String {
         use super::super::Line;
-        to_scanned(Line::new(text))
+        to_scanned(&Line::new(text))
     }
 
     #[allow(dead_code)]
@@ -218,10 +218,9 @@ impl std::fmt::Display for WeightAndAccent {
     }
 }
 
-pub fn to_scanned(line: super::Line) -> String {
-    use super::Line;
-    let Line(vec) = line;
-    let arr: Vec<WeightAndAccent> = vec.into_iter().map(|syll| syll.into()).collect();
+pub fn to_scanned(line: &super::Line) -> String {
+    let vec = line.as_vec();
+    let arr: Vec<WeightAndAccent> = vec.into_iter().map(|syll| (*syll).into()).collect();
     let mut ans = String::new();
     let mut mora_count = 0;
 

@@ -74,17 +74,39 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-// struct Poem(Vec<Vec<Line>>);
-pub struct Line(pub Vec<syllabify::Syllable>);
+struct Poem(Vec<Vec<Line>>);
+pub struct Line(Vec<syllabify::Syllable>);
 
 impl Line {
-    fn new(line: &str) -> Self {
-        Self(syllabify::convert_line_to_sylls(line))
+    #[must_use]
+    pub fn new(line: &str) -> Self {
+        let ans = Self(syllabify::convert_line_to_sylls(line));
+        match convert::to_ipa(&ans) {
+            Err(e) => panic!("{}, in line `{}`", e, line),
+            Ok(_) => {}
+        }
+        ans
+    }
+
+    #[must_use]
+    pub fn to_ipa(&self) -> String {
+        convert::to_ipa(self).unwrap()
+    }
+
+    // clippy is currently buggy (https://github.com/rust-lang/rust-clippy/issues/4979)
+    #[allow(clippy::missing_const_for_fn)]
+    #[must_use]
+    pub fn into_vec(self) -> Vec<syllabify::Syllable> {
+        self.0
+    }
+
+    const fn as_vec(&self) -> &Vec<syllabify::Syllable> {
+        &self.0
     }
 }
 
-/*impl Poem {
-    fn new(content: &[&str]) -> Self {
+impl Poem {
+    pub fn new(content: &[&str]) -> Self {
         Self(
             content
                 .iter()
@@ -92,23 +114,19 @@ impl Line {
                 .collect::<Vec<_>>(),
         )
     }
-}*/
+}
 
 // returns how many lines there are
 fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
+    let Poem(poem) = Poem::new(content);
     {
         let mut file = File::create(format!("docs/{}.html", date))?;
-        let converted = content
+        let converted = poem
             .iter()
-            .map(|a| {
-                a.lines()
-                    .map(|line| {
-                        let ipa = match convert::to_ipa(&Line::new(line)) {
-                            Ok(a) => a,
-                            Err(e) => panic!("{}, in line `{}`", e, line),
-                        };
-                        convert::elide_initial_glottal_stop(&ipa)
-                    })
+            .map(|chapter| {
+                chapter
+                    .iter()
+                    .map(|line| convert::elide_initial_glottal_stop(&line.to_ipa()))
                     .collect::<Vec<_>>()
                     .join("\n")
             })
@@ -118,11 +136,12 @@ fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
     }
     {
         let mut file = File::create(format!("docs/{}-scansion.html", date))?;
-        let scansion = content
+        let scansion = poem
             .iter()
-            .map(|a| {
-                a.lines()
-                    .map(|line| scansion::to_scanned(Line::new(line)))
+            .map(|chapter| {
+                chapter
+                    .iter()
+                    .map(|line| scansion::to_scanned(line))
                     .collect::<Vec<_>>()
                     .join("\n")
             })

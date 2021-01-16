@@ -136,7 +136,8 @@ biːɾine̞ʔɑːˈɾɑkiɣɑːnɑːˈʔihti
 
 use super::Line;
 
-pub fn to_ipa(Line(sylls): &Line) -> Result<String, &'static str> {
+pub fn to_ipa(line: &Line) -> Result<String, &'static str> {
+    let sylls = line.as_vec();
     let scansions: Vec<WeightAndAccent> = sylls.iter().map(|a| (*a).into()).collect();
     let mut ans = String::new();
     for (i, syll) in sylls.clone().into_iter().enumerate() {
