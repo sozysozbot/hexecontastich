@@ -160,6 +160,7 @@ pub fn scansion(text: &str) -> String {
         .join("\n")
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct WeightAndAccent {
     heavy: bool,
     accented: bool,
@@ -200,12 +201,31 @@ fn scansion_line(text: &str) -> String {
 
     let mut i = 0;
 
+    let extrametric_umuu = matches!(
+        &arr[..],
+        [
+            WeightAndAccent {
+                accented: true,
+                heavy: false
+            },
+            WeightAndAccent {
+                accented: false,
+                heavy: true
+            },
+            WeightAndAccent {
+                accented: false,
+                heavy: false
+            },
+            WeightAndAccent {
+                accented: false,
+                heavy: false
+            },
+            ..
+        ]
+    );
+
     // extrametric `úmuu` or `úmm`
-    if arr.len() >= 4
-        && format!("{}", arr[0]) == "u\u{0301}"
-        && format!("{}", arr[1]) == "m"
-        && format!("{}", arr[2]) == "u"
-        && format!("{}", arr[3]) == "u"
+    if extrametric_umuu
     {
         ans += &format!("{} {}{}{} ", arr[0], arr[1], arr[2], arr[3]);
         i = 4;
