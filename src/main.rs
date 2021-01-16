@@ -81,6 +81,8 @@ impl Line {
     #[must_use]
     pub fn new(line: &str) -> Self {
         let ans = Self(syllabify::convert_line_to_sylls(line));
+
+        // FIXME: this duplicates the "rare instance" warnings
         match convert::to_ipa(&ans) {
             Err(e) => panic!("{}, in line `{}`", e, line),
             Ok(_) => {}
@@ -114,39 +116,36 @@ impl Poem {
                 .collect::<Vec<_>>(),
         )
     }
+
+    fn map_lines_and_chapterize<F>(&self, mut f: F) -> Vec<String>
+    where
+        F: FnMut(&Line) -> String,
+    {
+        let Self(poem) = &self;
+        poem.iter()
+            .map(|chapter| {
+                chapter
+                    .iter()
+                    .map(|line| f(line))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })
+            .collect::<Vec<_>>()
+    }
 }
 
 // returns how many lines there are
 fn write_files(date: &str, content: &[&str]) -> Result<i32, Box<dyn Error>> {
-    let Poem(poem) = Poem::new(content);
+    let poem = Poem::new(content);
     {
         let mut file = File::create(format!("docs/{}.html", date))?;
         let converted = poem
-            .iter()
-            .map(|chapter| {
-                chapter
-                    .iter()
-                    .map(|line| convert::elide_initial_glottal_stop(&line.to_ipa()))
-                    .collect::<Vec<_>>()
-                    .join("\n")
-            })
-            .collect::<Vec<_>>();
-
+            .map_lines_and_chapterize(|line| convert::elide_initial_glottal_stop(&line.to_ipa()));
         write_file(&mut file, &converted, date)?;
     }
     {
         let mut file = File::create(format!("docs/{}-scansion.html", date))?;
-        let scansion = poem
-            .iter()
-            .map(|chapter| {
-                chapter
-                    .iter()
-                    .map(|line| scansion::to_scanned(line))
-                    .collect::<Vec<_>>()
-                    .join("\n")
-            })
-            .collect::<Vec<_>>();
-
+        let scansion = poem.map_lines_and_chapterize(scansion::to_scanned);
         write_file(&mut file, &scansion, date)
     }
 }
