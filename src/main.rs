@@ -136,32 +136,35 @@ impl Poem {
 
 fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<(), Box<dyn Error>> {
     let mut line_index = 0;
-    let mut content = String::new();
-    for (i, u) in converted.iter().enumerate() {
-        content += &format!(
-            "{}. <div id=\"res{}\" class=\"poem_block\">\n{}</div><br>\n\n",
-            i + 1,
-            i + 1,
-            u.lines()
-                .filter_map(|a| {
-                    if a.is_empty() {
-                        None
-                    } else {
-                        line_index += 1;
-                        if line_index % 5 == 0 {
-                            Some(format!(
-                                "<p>{}<span class=\"line_number\">{}</span></p>",
-                                a, line_index
-                            ))
+    let content = converted
+        .iter()
+        .enumerate()
+        .map(|(chapter_num, u)| {
+            format!(
+                "{}. <div id=\"res{}\" class=\"poem_block\">\n{}</div><br>\n",
+                chapter_num + 1,
+                chapter_num + 1,
+                u.lines()
+                    .filter_map(|a| {
+                        if a.is_empty() {
+                            None
                         } else {
-                            Some(format!("<p>{}</p>", a))
+                            line_index += 1;
+                            if line_index % 5 == 0 {
+                                Some(format!(
+                                    "<p>{}<span class=\"line_number\">{}</span></p>",
+                                    a, line_index
+                                ))
+                            } else {
+                                Some(format!("<p>{}</p>", a))
+                            }
                         }
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join("\n")
-        )
-    }
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            )
+        })
+        .collect::<Vec<_>>();
 
     write!(
         file,
@@ -169,8 +172,11 @@ fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<(), B
 <meta charset="utf-8">
 <link href="poem.css" rel="stylesheet">
 <a href="index.html">back to top</a> <a href="{}.html">main text</a> <a href="{}-scansion.html">scansion</a><br><br>
-{}"#,
-        date, date, content,
+{}
+"#,
+        date,
+        date,
+        content.join("\n"),
     )?;
 
     Ok(())
