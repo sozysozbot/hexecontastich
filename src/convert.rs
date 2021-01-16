@@ -124,6 +124,143 @@ pub fn second_from_last_mut<T>(a: &mut [T]) -> Option<&mut T> {
 }
 
 #[allow(clippy::too_many_lines)]
+fn convert_line2(text: &str) -> String {
+    use super::scansion::WeightAndAccent;
+    use super::syllabify::{convert_line_to_sylls, Coda, Onset, Syllable, Vowel};
+    use crate::w;
+    use log::warn;
+    let sylls = convert_line_to_sylls(text);
+    let scansions: Vec<WeightAndAccent> = sylls.iter().map(|a| (*a).into()).collect();
+
+    let mut ans = String::new();
+    for (i, syll) in sylls.clone().into_iter().enumerate() {
+        let accent = if syll.accented { "ˈ" } else { "" };
+
+        let is_plosive_because_of_preceding_nasal = i > 0
+            && matches!(
+                sylls.get(i - 1),
+                Some(Syllable {
+                    coda: Some(Coda::Nasal),
+                    ..
+                })
+            );
+
+        let is_plosive_because_of_unlenited_beginning = i == 0
+            && !matches!(
+                &scansions[..],
+                [w!('U'), w!('m'), w!('u'), w!('u'), ..] | [w!('U'), w!('m'), w!('m'), ..]
+            );
+
+        let is_plosive =
+            is_plosive_because_of_preceding_nasal || is_plosive_because_of_unlenited_beginning;
+
+        let onset = match (is_plosive, syll.onset) {
+            (_, Onset::T) => "t",
+            (_, Onset::K) => "k",
+            (_, Onset::S) => "s",
+            (_, Onset::N) => "n",
+            (_, Onset::M) => "m",
+            (_, Onset::Q) => "ʔ",
+            (_, Onset::P) => "p",
+            (true, Onset::B) => "b",
+            (false, Onset::B) => "β",
+            (true, Onset::G) => "ɡ",
+            (false, Onset::G) => "ɣ",
+            (true, Onset::R) => "d",
+            (false, Onset::R) => {
+                // `/ɾ/` + unaccented short vowel + `/ɾ/` turns the first `/ɾ/` into `[d]`
+                if !syll.accented
+                    && syll.coda.is_none()
+                    && matches!(
+                        sylls.get(i + 1),
+                        Some(Syllable {
+                            onset: Onset::R, ..
+                        })
+                    )
+                {
+                    "d"
+                } else {
+                    "ɾ"
+                }
+            }
+        };
+
+        let coda = match syll.coda {
+            None => "",
+            Some(Coda::Long) => "ː",
+            Some(Coda::H) => match sylls[i + 1].onset {
+                Onset::K | Onset::T | Onset::P => "h",
+                Onset::S => "s",
+                Onset::G | Onset::B | Onset::N | Onset::M | Onset::Q => {
+                    panic!("Aspirations should not be followed by a glottal stop or a voiced consonant, in line {}", text)
+                }
+                Onset::R => {
+                    // `/ɾ/` + unaccented short vowel + `/ɾ/` turns the first `/ɾ/` into `[d]`
+                    if !sylls[i + 1].accented
+                        && sylls[i + 1].coda.is_none()
+                        && matches!(
+                            sylls.get(i + 2),
+                            Some(Syllable {
+                                onset: Onset::R, ..
+                            })
+                        )
+                    {
+                        warn!("Rare instance of h+d");
+                        "h"
+                    } else {
+                        panic!("Aspirations should not be followed by a glottal stop or a voiced consonant, in line {}", text)
+                    }
+                }
+            },
+            Some(Coda::Nasal) => match sylls[i + 1].onset {
+                Onset::K | Onset::G => "ŋ",
+                Onset::T | Onset::R | Onset::N => "n",
+                Onset::S => {
+                    warn!("Rare instance of n+s");
+                    "n"
+                }
+                Onset::P | Onset::B | Onset::M => "m",
+                Onset::Q => {
+                    panic!(
+                        "Nasals should not be followed by a glottal stop, in line {}",
+                        text
+                    )
+                }
+            },
+        };
+
+        let vowel = match syll.vowel {
+            Vowel::E => "e̞",
+            Vowel::O => "o̞",
+            Vowel::I => "i",
+            Vowel::U => "u",
+            Vowel::A => match (syll.coda, syll.accented) {
+                (Some(Coda::Long), _) | (_, true) => "ɑ",
+                (None, false) | (Some(Coda::H), false) => "ə",
+                (Some(Coda::Nasal), false) => {
+                    // if closed syllable, ə becomes ɑ, except when the next syllable is accented
+                    if matches!(sylls.get(i + 1), Some(Syllable { accented: true, .. })) {
+                        "ə"
+                    } else {
+                        "ɑ"
+                    }
+                }
+            },
+        };
+
+        ans += &format!("{}{}{}{}", accent, onset, vowel, coda)
+    }
+
+    let stage0 = ans;
+    lazy_static! {
+        static ref RG1: Regex = Regex::new(r"^ʔɑ([mnŋ])([^ˈ])").unwrap();
+        static ref RG2: Regex = Regex::new(r"^ʔɑː([^ˈ])").unwrap();
+    }
+    let stage1 = RG1.replace_all(&stage0, "ɑ$1$2");
+    RG2.replace_all(&stage1, "ɑː$1").to_string()
+}
+
+#[allow(clippy::too_many_lines)]
 fn convert_line(text: &str) -> String {
     let text: Vec<char> = text.chars().collect();
     let mut ans = vec![];
@@ -283,8 +420,12 @@ fn convert_line(text: &str) -> String {
 
 pub fn convert(text: &str) -> String {
     text.lines()
-        .map(|line| convert_line(line))
+        .map(|line| {
+            let l1 = convert_line(line);
+            let l2 = convert_line2(line);
+            assert_eq!(l1, l2);
+            l1
+        })
         .collect::<Vec<_>>()
         .join("\n")
 }
-

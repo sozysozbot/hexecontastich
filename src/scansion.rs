@@ -161,11 +161,12 @@ pub fn scansion(text: &str) -> String {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-struct WeightAndAccent {
-    heavy: bool,
-    accented: bool,
+pub struct WeightAndAccent {
+    pub heavy: bool,
+    pub accented: bool,
 }
 
+#[macro_export]
 macro_rules! w {
     ('U') => {
         WeightAndAccent {
