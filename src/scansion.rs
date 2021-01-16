@@ -166,6 +166,33 @@ struct WeightAndAccent {
     accented: bool,
 }
 
+macro_rules! w {
+    ('U') => {
+        WeightAndAccent {
+            heavy: false,
+            accented: true,
+        }
+    };
+    ('u') => {
+        WeightAndAccent {
+            heavy: false,
+            accented: false,
+        }
+    };
+    ('M') => {
+        WeightAndAccent {
+            heavy: true,
+            accented: true,
+        }
+    };
+    ('m') => {
+        WeightAndAccent {
+            heavy: true,
+            accented: false,
+        }
+    };
+}
+
 impl Into<WeightAndAccent> for super::syllabify::Syllable {
     fn into(self) -> WeightAndAccent {
         WeightAndAccent {
@@ -201,53 +228,11 @@ fn scansion_line(text: &str) -> String {
 
     let mut i = 0;
 
-    let extrametric_umuu = matches!(
-        &arr[..],
-        [
-            WeightAndAccent {
-                accented: true,
-                heavy: false
-            },
-            WeightAndAccent {
-                accented: false,
-                heavy: true
-            },
-            WeightAndAccent {
-                accented: false,
-                heavy: false
-            },
-            WeightAndAccent {
-                accented: false,
-                heavy: false
-            },
-            ..
-        ]
-    );
-
-    let extrametric_umm = matches!(
-        &arr[..],
-        [
-            WeightAndAccent {
-                accented: true,
-                heavy: false
-            },
-            WeightAndAccent {
-                accented: false,
-                heavy: true
-            },
-            WeightAndAccent {
-                accented: false,
-                heavy: true
-            },
-            ..
-        ]
-    );
-
     // extrametric `úmuu` or `úmm`
-    if extrametric_umuu {
+    if matches!(&arr[..], [w!('U'), w!('m'), w!('u'), w!('u'), ..]) {
         ans += &format!("{} {}{}{} ", arr[0], arr[1], arr[2], arr[3]);
         i = 4;
-    } else if extrametric_umm {
+    } else if matches!(&arr[..], [w!('U'), w!('m'), w!('m'), ..]) {
         ans += &format!("{} {}{} ", arr[0], arr[1], arr[2]);
         i = 3;
     }
