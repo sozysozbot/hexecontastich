@@ -14,7 +14,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::Write;
 
-fn generate_li(poem: &Poem, date: &str) -> Result<(usize, String), Box<dyn Error>> {
+fn generate_li(poem: &Poem, date: &str) -> (usize, String) {
     let how_many_lines = poem.line_count();
     let li = if how_many_lines == 60 {
         format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
@@ -24,7 +24,7 @@ fn generate_li(poem: &Poem, date: &str) -> Result<(usize, String), Box<dyn Error
             date, date, how_many_lines
         )
     };
-    Ok((how_many_lines, li))
+    (how_many_lines, li)
 }
 
 fn read_to_poem_map() -> Result<std::collections::HashMap<String, Poem>, Box<dyn Error>> {
@@ -61,23 +61,25 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Read
     let poem_map = read_to_poem_map()?;
 
-    // Write
-    let mut map = HashMap::new();
-    for (date, poem) in poem_map {
+    // Write each poem's IPA and scansion
+    for (date, poem) in &poem_map {
         chapterize_and_write_file(
-            &poem,
+            poem,
             &mut File::create(format!("docs/{}.html", date))?,
-            &date,
+            date,
             |line| convert::elide_initial_glottal_stop(&line.to_ipa()),
         )?;
         chapterize_and_write_file(
-            &poem,
+            poem,
             &mut File::create(format!("docs/{}-scansion.html", date))?,
-            &date,
+            date,
             scansion::to_scanned,
         )?;
+    }
 
-        map.insert(date.clone(), generate_li(&poem, &date)?);
+    let mut map = HashMap::new();
+    for (date, poem) in poem_map {
+        map.insert(date.clone(), generate_li(&poem, &date));
     }
 
     let sorted = map.into_iter().sorted().collect::<Vec<_>>();
