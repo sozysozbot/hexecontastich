@@ -14,7 +14,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::Write;
 
-fn generate_li(poem: &Poem, date: &str) -> (usize, String) {
+fn generate_li(poem: &Poem, date: &str) -> String {
     let how_many_lines = poem.line_count();
     let li = if how_many_lines == 60 {
         format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
@@ -24,7 +24,7 @@ fn generate_li(poem: &Poem, date: &str) -> (usize, String) {
             date, date, how_many_lines
         )
     };
-    (how_many_lines, li)
+    li
 }
 
 fn read_to_poem_map() -> Result<std::collections::HashMap<String, Poem>, Box<dyn Error>> {
@@ -52,7 +52,6 @@ fn read_to_poem_map() -> Result<std::collections::HashMap<String, Poem>, Box<dyn
 
 fn main() -> Result<(), Box<dyn Error>> {
     use itertools::Itertools;
-    use std::collections::HashMap;
 
     // Starting up stuffs
     std::env::set_var("RUST_LOG", "info");
@@ -77,15 +76,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         )?;
     }
 
-    let mut map = HashMap::new();
-    for (date, poem) in poem_map {
-        map.insert(date.clone(), generate_li(&poem, &date));
-    }
-
-    let sorted = map.into_iter().sorted().collect::<Vec<_>>();
-    let html = sorted
+    let html = poem_map
         .iter()
-        .map(|(_date, (_, li))| li.to_owned())
+        .sorted()
+        .map(|(date, poem)| (date.clone(), generate_li(poem, date)))
+        .map(|(_date, li)| li.to_owned())
         .collect::<Vec<_>>()
         .join("\n");
 
@@ -94,9 +89,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     write!(file, "<!DOCTYPE html><head><title>Hexecontastich</title></head><body><h2>Hexecontastich</h2><img src=\"img/hexecontastich.jpg\" width=\"300\">\n<ul>\n{}\n</ul>\n</body>", html)?;
 
     let mut total_lines = 0;
-    let progress = sorted
+    let progress = poem_map
         .iter()
-        .map(|(date, (num_of_lines, _li))| {
+        .map(|(date, poem)| (date.clone(), poem.line_count()))
+        .sorted()
+        .collect::<Vec<_>>()
+        .iter()
+        .map(|(date, num_of_lines)| {
             let date = date.split('-').collect::<Vec<_>>()[0..=2].join("/");
             total_lines += num_of_lines;
             format!("{}\t{}", date, total_lines)
@@ -111,6 +110,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[derive(Clone,Debug, PartialEq, Eq, Ord, PartialOrd)]
 struct Poem(Vec<Vec<Line>>);
 use line::Line;
 pub mod line;

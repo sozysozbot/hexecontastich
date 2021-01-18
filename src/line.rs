@@ -1,3 +1,4 @@
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
 pub struct Line(Vec<syllabify::Syllable>);
 
 mod convert;
