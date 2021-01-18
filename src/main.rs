@@ -48,13 +48,9 @@ fn output(
     Ok(())
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    use itertools::Itertools;
+fn read_to_poem_map() -> Result<std::collections::HashMap<String, Poem>, Box<dyn Error>> {
     use std::collections::HashMap;
-
-    std::env::set_var("RUST_LOG", "info");
-    env_logger::init();
-    let mut map = HashMap::new();
+    let mut poem_map = HashMap::new();
     for entry in std::fs::read_dir("raw/")? {
         let entry = entry?;
         let path = entry.path();
@@ -69,8 +65,27 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let poem = Poem::new(&cont);
 
-            output(&poem, date, &mut map)?;
+            poem_map.insert(date, poem);
         }
+    }
+    Ok(poem_map)
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    use itertools::Itertools;
+    use std::collections::HashMap;
+
+    // Starting up stuffs
+    std::env::set_var("RUST_LOG", "info");
+    env_logger::init();
+
+    // Read
+    let poem_map = read_to_poem_map()?;
+
+    // Write
+    let mut map = HashMap::new();
+    for (date, poem) in poem_map {
+        output(&poem, date, &mut map)?;
     }
 
     let sorted = map.into_iter().sorted().collect::<Vec<_>>();
