@@ -118,80 +118,61 @@ impl Poem {
         poem.iter().map(|chapter| chapter.iter().count()).sum()
     }
 
-    pub fn map_lines_and_chapterize<F>(&self, mut f: F) -> Vec<String>
-    where
-        F: FnMut(&Line) -> String,
-    {
-        let Self(poem) = &self;
-        poem.iter()
-            .map(|chapter| {
-                chapter
-                    .iter()
-                    .map(|line| f(line))
-                    .collect::<Vec<_>>()
-                    .join("\n")
-            })
-            .collect::<Vec<_>>()
-    }
-
     pub fn chapterize_and_write_file<F>(
         &self,
-        mut file: &mut File,
+        file: &mut File,
         date: &str,
-        lambda: F,
+        mut lambda: F,
     ) -> Result<(), Box<dyn Error>>
     where
         F: FnMut(&Line) -> String,
     {
-        let scansion = self.map_lines_and_chapterize(lambda);
-        write_file(&mut file, &scansion, date)
-    }
-}
-
-fn write_file(file: &mut File, converted: &[String], date: &str) -> Result<(), Box<dyn Error>> {
-    let mut line_index = 0;
-    let content = converted
-        .iter()
-        .enumerate()
-        .map(|(chapter_num, u)| {
-            format!(
-                "{}. <div id=\"res{}\" class=\"poem_block\">\n{}</div><br>\n",
-                chapter_num + 1,
-                chapter_num + 1,
-                u.lines()
-                    .filter_map(|a| {
-                        if a.is_empty() {
-                            None
-                        } else {
-                            line_index += 1;
-                            if line_index % 5 == 0 {
-                                Some(format!(
-                                    "<p>{}<span class=\"line_number\">{}</span></p>",
-                                    a, line_index
-                                ))
+        let mut line_index = 0;
+        let Self(poem) = &self;
+        let content = poem
+            .iter()
+            .enumerate()
+            .map(|(chap_num, chap)| {
+                format!(
+                    "{}. <div id=\"res{}\" class=\"poem_block\">\n{}</div><br>\n",
+                    chap_num + 1,
+                    chap_num + 1,
+                    chap.iter()
+                        .filter_map(|line| {
+                            let a = lambda(line);
+                            if a.is_empty() {
+                                None
                             } else {
-                                Some(format!("<p>{}</p>", a))
+                                line_index += 1;
+                                if line_index % 5 == 0 {
+                                    Some(format!(
+                                        "<p>{}<span class=\"line_number\">{}</span></p>",
+                                        a, line_index
+                                    ))
+                                } else {
+                                    Some(format!("<p>{}</p>", a))
+                                }
                             }
-                        }
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n")
-            )
-        })
-        .collect::<Vec<_>>();
+                        })
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                )
+            })
+            .collect::<Vec<_>>();
 
-    write!(
-        file,
-        r#"<!DOCTYPE html>
+        write!(
+            file,
+            r#"<!DOCTYPE html>
 <meta charset="utf-8">
 <link href="poem.css" rel="stylesheet">
 <a href="index.html">back to top</a> <a href="{}.html">main text</a> <a href="{}-scansion.html">scansion</a><br><br>
 {}
 "#,
-        date,
-        date,
-        content.join("\n"),
-    )?;
+            date,
+            date,
+            content.join("\n"),
+        )?;
 
-    Ok(())
+        Ok(())
+    }
 }
