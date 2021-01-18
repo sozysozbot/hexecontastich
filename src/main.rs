@@ -29,18 +29,19 @@ fn each_raw_file(
         let cont = content.split("\n\n").collect::<Vec<_>>();
 
         let poem = Poem::new(&cont);
-        {
-            let mut file = File::create(format!("docs/{}.html", date))?;
-            let converted = poem.map_lines_and_chapterize(|line| {
-                convert::elide_initial_glottal_stop(&line.to_ipa())
-            });
-            write_file(&mut file, &converted, &date)?;
-        }
-        {
-            let mut file = File::create(format!("docs/{}-scansion.html", date))?;
-            let scansion = poem.map_lines_and_chapterize(scansion::to_scanned);
-            write_file(&mut file, &scansion, &date)?;
-        }
+
+        poem.chapterize_and_write_file(
+            &mut File::create(format!("docs/{}.html", date))?,
+            &date,
+            |line| convert::elide_initial_glottal_stop(&line.to_ipa()),
+        )?;
+
+        poem.chapterize_and_write_file(
+            &mut File::create(format!("docs/{}-scansion.html", date))?,
+            &date,
+            scansion::to_scanned,
+        )?;
+
         let how_many_lines = poem.line_count();
         let li = if how_many_lines == 60 {
             format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
@@ -131,6 +132,19 @@ impl Poem {
                     .join("\n")
             })
             .collect::<Vec<_>>()
+    }
+
+    pub fn chapterize_and_write_file<F>(
+        &self,
+        mut file: &mut File,
+        date: &str,
+        lambda: F,
+    ) -> Result<(), Box<dyn Error>>
+    where
+        F: FnMut(&Line) -> String,
+    {
+        let scansion = self.map_lines_and_chapterize(lambda);
+        write_file(&mut file, &scansion, date)
     }
 }
 
