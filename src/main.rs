@@ -14,25 +14,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::Write;
 
-fn output(
-    poem: &Poem,
-    date: String,
-    map: &mut std::collections::HashMap<String, (usize, String)>,
-) -> Result<(), Box<dyn Error>> {
-    chapterize_and_write_file(
-        poem,
-        &mut File::create(format!("docs/{}.html", date))?,
-        &date,
-        |line| convert::elide_initial_glottal_stop(&line.to_ipa()),
-    )?;
-
-    chapterize_and_write_file(
-        poem,
-        &mut File::create(format!("docs/{}-scansion.html", date))?,
-        &date,
-        scansion::to_scanned,
-    )?;
-
+fn generate_li(poem: &Poem, date: &str) -> Result<(usize, String), Box<dyn Error>> {
     let how_many_lines = poem.line_count();
     let li = if how_many_lines == 60 {
         format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
@@ -42,10 +24,7 @@ fn output(
             date, date, how_many_lines
         )
     };
-
-    map.insert(date, (how_many_lines, li));
-
-    Ok(())
+    Ok((how_many_lines, li))
 }
 
 fn read_to_poem_map() -> Result<std::collections::HashMap<String, Poem>, Box<dyn Error>> {
@@ -85,7 +64,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Write
     let mut map = HashMap::new();
     for (date, poem) in poem_map {
-        output(&poem, date, &mut map)?;
+        chapterize_and_write_file(
+            &poem,
+            &mut File::create(format!("docs/{}.html", date))?,
+            &date,
+            |line| convert::elide_initial_glottal_stop(&line.to_ipa()),
+        )?;
+        chapterize_and_write_file(
+            &poem,
+            &mut File::create(format!("docs/{}-scansion.html", date))?,
+            &date,
+            scansion::to_scanned,
+        )?;
+
+        map.insert(date.clone(), generate_li(&poem, &date)?);
     }
 
     let sorted = map.into_iter().sorted().collect::<Vec<_>>();
