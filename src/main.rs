@@ -19,13 +19,15 @@ fn output(
     date: String,
     map: &mut std::collections::HashMap<String, (usize, String)>,
 ) -> Result<(), Box<dyn Error>> {
-    poem.chapterize_and_write_file(
+    chapterize_and_write_file(
+        poem,
         &mut File::create(format!("docs/{}.html", date))?,
         &date,
         |line| convert::elide_initial_glottal_stop(&line.to_ipa()),
     )?;
 
-    poem.chapterize_and_write_file(
+    chapterize_and_write_file(
+        poem,
         &mut File::create(format!("docs/{}-scansion.html", date))?,
         &date,
         scansion::to_scanned,
@@ -118,62 +120,62 @@ impl Poem {
         let Self(poem) = &self;
         poem.iter().map(|chapter| chapter.iter().count()).sum()
     }
+}
 
-    pub fn chapterize_and_write_file<F>(
-        &self,
-        file: &mut File,
-        date: &str,
-        mut lambda: F,
-    ) -> Result<(), Box<dyn Error>>
-    where
-        F: FnMut(&Line) -> String,
-    {
-        let mut line_index = 0;
-        let Self(poem) = &self;
-        let content = poem
-            .iter()
-            .enumerate()
-            .map(|(chap_num, chap)| {
-                format!(
-                    "{}. <div id=\"res{}\" class=\"poem_block\">\n{}</div><br>\n",
-                    chap_num + 1,
-                    chap_num + 1,
-                    chap.iter()
-                        .filter_map(|line| {
-                            if line.is_empty() {
-                                None
+fn chapterize_and_write_file<F>(
+    poem: &Poem,
+    file: &mut File,
+    date: &str,
+    mut lambda: F,
+) -> Result<(), Box<dyn Error>>
+where
+    F: FnMut(&Line) -> String,
+{
+    let mut line_index = 0;
+    let Poem(poem) = &poem;
+    let content = poem
+        .iter()
+        .enumerate()
+        .map(|(chap_num, chap)| {
+            format!(
+                "{}. <div id=\"res{}\" class=\"poem_block\">\n{}</div><br>\n",
+                chap_num + 1,
+                chap_num + 1,
+                chap.iter()
+                    .filter_map(|line| {
+                        if line.is_empty() {
+                            None
+                        } else {
+                            let a = lambda(line);
+                            line_index += 1;
+                            if line_index % 5 == 0 {
+                                Some(format!(
+                                    "<p>{}<span class=\"line_number\">{}</span></p>",
+                                    a, line_index
+                                ))
                             } else {
-                                let a = lambda(line);
-                                line_index += 1;
-                                if line_index % 5 == 0 {
-                                    Some(format!(
-                                        "<p>{}<span class=\"line_number\">{}</span></p>",
-                                        a, line_index
-                                    ))
-                                } else {
-                                    Some(format!("<p>{}</p>", a))
-                                }
+                                Some(format!("<p>{}</p>", a))
                             }
-                        })
-                        .collect::<Vec<_>>()
-                        .join("\n")
-                )
-            })
-            .collect::<Vec<_>>();
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            )
+        })
+        .collect::<Vec<_>>();
 
-        write!(
-            file,
-            r#"<!DOCTYPE html>
+    write!(
+        file,
+        r#"<!DOCTYPE html>
 <meta charset="utf-8">
 <link href="poem.css" rel="stylesheet">
 <a href="index.html">back to top</a> <a href="{}.html">main text</a> <a href="{}-scansion.html">scansion</a><br><br>
 {}
 "#,
-            date,
-            date,
-            content.join("\n"),
-        )?;
+        date,
+        date,
+        content.join("\n"),
+    )?;
 
-        Ok(())
-    }
+    Ok(())
 }
