@@ -53,14 +53,20 @@ fn read_to_poem_map() -> Result<std::collections::HashMap<String, Poem>, Box<dyn
 fn main() -> Result<(), Box<dyn Error>> {
     use itertools::Itertools;
 
+    //----------------------------------------------------------------
     // Starting up stuffs
+    //----------------------------------------------------------------
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
 
+    //----------------------------------------------------------------
     // Read
+    //----------------------------------------------------------------
     let poem_map = read_to_poem_map()?;
 
+    //----------------------------------------------------------------
     // Write each poem's IPA and scansion
+    //----------------------------------------------------------------
     for (date, poem) in &poem_map {
         chapterize_and_write_file(
             poem,
@@ -76,11 +82,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         )?;
     }
 
+    //----------------------------------------------------------------
+    // Write index.html
+    //----------------------------------------------------------------
     let html = poem_map
         .iter()
         .sorted()
-        .map(|(date, poem)| (date.clone(), generate_li(poem, date)))
-        .map(|(_date, li)| li.to_owned())
+        .map(|(date, poem)| generate_li(poem, date))
         .collect::<Vec<_>>()
         .join("\n");
 
@@ -88,16 +96,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut file = File::create("docs/index.html")?;
     write!(file, "<!DOCTYPE html><head><title>Hexecontastich</title></head><body><h2>Hexecontastich</h2><img src=\"img/hexecontastich.jpg\" width=\"300\">\n<ul>\n{}\n</ul>\n</body>", html)?;
 
+    //----------------------------------------------------------------
+    // Write progress.tsv
+    //----------------------------------------------------------------
     let mut total_lines = 0;
     let progress = poem_map
         .iter()
-        .map(|(date, poem)| (date.clone(), poem.line_count()))
         .sorted()
-        .collect::<Vec<_>>()
-        .iter()
-        .map(|(date, num_of_lines)| {
+        .map(|(date, poem)| {
             let date = date.split('-').collect::<Vec<_>>()[0..=2].join("/");
-            total_lines += num_of_lines;
+            total_lines += poem.line_count();
             format!("{}\t{}", date, total_lines)
         })
         .collect::<Vec<_>>()
@@ -110,7 +118,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-#[derive(Clone,Debug, PartialEq, Eq, Ord, PartialOrd)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
 struct Poem(Vec<Vec<Line>>);
 use line::Line;
 pub mod line;
