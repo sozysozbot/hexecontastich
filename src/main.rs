@@ -140,7 +140,7 @@ impl Poem {
                     chap.iter()
                         .filter_map(|line| {
                             let a = lambda(line);
-                            if a.is_empty() {
+                            if line.is_empty() {
                                 None
                             } else {
                                 line_index += 1;

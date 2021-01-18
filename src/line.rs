@@ -5,6 +5,11 @@ pub mod syllabify;
 
 impl Line {
     #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.as_vec().is_empty()
+    }
+
+    #[must_use]
     pub fn new(line: &str) -> Self {
         let ans = Self(syllabify::convert_line_to_sylls(line));
 
