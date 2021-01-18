@@ -139,10 +139,10 @@ impl Poem {
                     chap_num + 1,
                     chap.iter()
                         .filter_map(|line| {
-                            let a = lambda(line);
                             if line.is_empty() {
                                 None
                             } else {
+                                let a = lambda(line);
                                 line_index += 1;
                                 if line_index % 5 == 0 {
                                     Some(format!(
