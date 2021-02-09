@@ -94,7 +94,41 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut file = File::create("progress.tsv")?;
     writeln!(file, "{}", progress)?;
     info!("Processed the total of {} lines.", total_lines);
+
+    //----------------------------------------------------------------
+    // Write stat.html
+    //----------------------------------------------------------------
+    let mut file = File::create("docs/stat.html")?;
+    writeln!(
+        file,
+        r#"<!DOCTYPE html>
+<head><title>statistics</title></head>
+
+<h2>consonants</h2>
+<table>
+{}</table>"#,
+        vec![
+            format!("<tr><td>/p/</td><td>{}</td><td></td></tr>", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::P)),
+            format!("<tr><td>/β/</td><td>{}</td><td></td></tr>", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::B)),
+            format!("<tr><td>/m/</td><td>{}</td><td></td></tr>", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::M)),
+            format!("<tr><td>/t/</td><td>{}</td><td></td></tr>", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::T)),
+            format!("<tr><td>/ɾ/</td><td>{}</td><td></td></tr>", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::R)),
+            format!("<tr><td>/n/</td><td>{}</td><td></td></tr>", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::N)),
+            format!("<tr><td>/s/</td><td>{}</td><td></td></tr>", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::S)),
+            format!("<tr><td>/k/</td><td>{}</td><td></td></tr>", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::K)),
+            format!("<tr><td>/ɣ/</td><td>{}</td><td></td></tr>", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::G)),
+            format!("<tr><td>/ʔ/</td><td>{}</td><td></td></tr>", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::Q)),
+        ]
+        .join("\n")
+    )?;
     Ok(())
+}
+
+fn count_syll<F>(poem_map: &HashMap<String, Poem>, f: &F) -> usize
+where
+    F: Fn(&line::syllabify::Syllable) -> bool,
+{
+    poem_map.iter().map(|(_, poem)| poem.count_syll(f)).sum()
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
@@ -103,6 +137,21 @@ use line::Line;
 pub mod line;
 
 impl Poem {
+    #[must_use]
+    pub fn count_syll<F>(&self, f: &F) -> usize
+    where
+        F: Fn(&line::syllabify::Syllable) -> bool,
+    {
+        self.0
+            .iter()
+            .map(|vec_line| {
+                vec_line
+                    .iter()
+                    .map(|line| line.count_syll(&f))
+                    .sum::<usize>()
+            })
+            .sum()
+    }
     #[must_use]
     pub fn new(content: &[&str]) -> Self {
         Self(

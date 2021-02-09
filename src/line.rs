@@ -6,6 +6,14 @@ pub mod syllabify;
 
 impl Line {
     #[must_use]
+    pub fn count_syll<F>(&self, f: &F) -> usize
+    where
+        F: Fn(&syllabify::Syllable) -> bool,
+    {
+        self.0.iter().filter(|syll| f(*syll)).count()
+    }
+
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.as_vec().is_empty()
     }
