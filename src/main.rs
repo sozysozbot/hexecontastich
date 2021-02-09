@@ -38,6 +38,7 @@ fn read_to_poem_map() -> Result<HashMap<String, Poem>, Box<dyn Error>> {
     Ok(poem_map)
 }
 
+#[allow(clippy::cast_precision_loss)]
 fn main() -> Result<(), Box<dyn Error>> {
     use itertools::Itertools;
 
@@ -101,15 +102,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     {
         use line::syllabify::Onset::{B, G, K, M, N, P, Q, R, S, T};
         let mut file = File::create("docs/stat.html")?;
+        let syll_total = count_syll(&poem_map, &|_| true);
         writeln!(
             file,
             "<!DOCTYPE html>\n<head><title>statistics</title></head>\n\n<h2>consonants</h2>\n<table>\n{}</table>",
-            vec![P, B, M, T, R, N, S, K, G, Q].into_iter().map(|onset|
+            vec![P, B, M, T, R, N, S, K, G, Q].into_iter().map(|onset|{
+                let count = count_syll(&poem_map, &|syll| syll.onset == onset);
                 format!(
-                    "<tr><td>/{}/</td><td>{}</td><td></td></tr>", 
+                    "<tr><td>/{}/</td><td style=\"text-align: right; font-family: monospace\">{}</td><td style=\"text-align: right; font-family: monospace\">{:.2}%</td></tr>",
                     onset.to_representative_ipa(),
-                    count_syll(&poem_map, &|syll| syll.onset == onset)
-                ),
+                    count, count as f64 / (syll_total as f64) * 100.0
+                )
+            }
             ).collect::<Vec<_>>()
             .join("\n")
         )?;
