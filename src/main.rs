@@ -103,9 +103,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         use line::syllabify::Onset::{B, G, K, M, N, P, Q, R, S, T};
         let mut file = File::create("docs/stat.html")?;
         let syll_total = count_syll(&poem_map, &|_| true);
-        writeln!(
-            file,
-            "<!DOCTYPE html>\n<head><title>statistics</title></head>\n\n<h2>consonants</h2>\n<table>\n{}</table>",
+
+        let onset_info = format!(
+            "<h2>onsets</h2>\n<table>\n{}</table>", 
             vec![P, B, M, T, R, N, S, K, G, Q].into_iter().map(|onset|{
                 let count = count_syll(&poem_map, &|syll| syll.onset == onset);
                 format!(
@@ -114,8 +114,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                     count, count as f64 / (syll_total as f64) * 100.0
                 )
             }
-            ).collect::<Vec<_>>()
-            .join("\n")
+        ).collect::<Vec<_>>()
+         .join("\n"));
+        writeln!(
+            file,
+            "<!DOCTYPE html>\n<head><title>statistics</title></head>\n\n{}",
+            onset_info
         )?;
     }
     Ok(())
