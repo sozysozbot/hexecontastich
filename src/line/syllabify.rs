@@ -36,6 +36,19 @@ pub enum Onset {
     Q,
 }
 
+impl Vowel {
+    #[must_use]
+    pub const fn to_representative_ipa(self) -> &'static str {
+        match self {
+            Self::A => "ə",
+            Self::E => "e̞",
+            Self::I => "i",
+            Self::O => "o̞",
+            Self::U => "u",
+        }
+    }
+}
+
 impl Onset {
     #[must_use]
     pub const fn to_representative_ipa(self) -> &'static str {
