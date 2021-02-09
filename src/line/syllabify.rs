@@ -36,6 +36,24 @@ pub enum Onset {
     Q,
 }
 
+impl Onset {
+    #[must_use]
+    pub const fn to_representative_ipa(self) -> &'static str {
+        match self {
+            Self::P => "p",
+            Self::B => "β",
+            Self::M => "m",
+            Self::T => "t",
+            Self::R => "ɾ",
+            Self::N => "n",
+            Self::S => "s",
+            Self::K => "k",
+            Self::G => "ɣ",
+            Self::Q => "ʔ",
+        }
+    }
+}
+
 const fn consonant(c: char) -> Option<Onset> {
     match c {
         '\'' | 'q' => Some(Onset::Q),

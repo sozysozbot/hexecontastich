@@ -98,24 +98,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     //----------------------------------------------------------------
     // Write stat.html
     //----------------------------------------------------------------
-    let mut file = File::create("docs/stat.html")?;
-    writeln!(
-        file,
-        "<!DOCTYPE html>\n<head><title>statistics</title></head>\n\n<h2>consonants</h2>\n<table>\n{}</table>",
-        vec![
-            format!("<tr><td>/{}/</td><td>{}</td><td></td></tr>", "p", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::P)),
-            format!("<tr><td>/{}/</td><td>{}</td><td></td></tr>", "β", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::B)),
-            format!("<tr><td>/{}/</td><td>{}</td><td></td></tr>", "m", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::M)),
-            format!("<tr><td>/{}/</td><td>{}</td><td></td></tr>", "t", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::T)),
-            format!("<tr><td>/{}/</td><td>{}</td><td></td></tr>", "ɾ", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::R)),
-            format!("<tr><td>/{}/</td><td>{}</td><td></td></tr>", "n", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::N)),
-            format!("<tr><td>/{}/</td><td>{}</td><td></td></tr>", "s", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::S)),
-            format!("<tr><td>/{}/</td><td>{}</td><td></td></tr>", "k", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::K)),
-            format!("<tr><td>/{}/</td><td>{}</td><td></td></tr>", "ɣ", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::G)),
-            format!("<tr><td>/{}/</td><td>{}</td><td></td></tr>", "ʔ", count_syll(&poem_map, &|syll| syll.onset == line::syllabify::Onset::Q)),
-        ]
-        .join("\n")
-    )?;
+    {
+        use line::syllabify::Onset::{B, G, K, M, N, P, Q, R, S, T};
+        let mut file = File::create("docs/stat.html")?;
+        writeln!(
+            file,
+            "<!DOCTYPE html>\n<head><title>statistics</title></head>\n\n<h2>consonants</h2>\n<table>\n{}</table>",
+            vec![P, B, M, T, R, N, S, K, G, Q].into_iter().map(|onset|
+                format!(
+                    "<tr><td>/{}/</td><td>{}</td><td></td></tr>", 
+                    onset.to_representative_ipa(),
+                    count_syll(&poem_map, &|syll| syll.onset == onset)
+                ),
+            ).collect::<Vec<_>>()
+            .join("\n")
+        )?;
+    }
     Ok(())
 }
 
