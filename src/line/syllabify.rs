@@ -36,6 +36,17 @@ pub enum Onset {
     Q,
 }
 
+impl Coda {
+    #[must_use]
+    pub const fn to_representative_ipa(self) -> &'static str {
+        match self {
+            Self::Nasal => "N",
+            Self::H => "h",
+            Self::Long => "ː",
+        }
+    }
+}
+
 impl Vowel {
     #[must_use]
     pub const fn to_representative_ipa(self) -> &'static str {
