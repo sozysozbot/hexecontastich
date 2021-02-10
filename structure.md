@@ -66,4 +66,4 @@ The seventh feet is exclusively `ḿuu`, `muu` or `úum`. If the seventh feet i
 
 `ḿuu`, `muu`, `mm`, and `múu` account for roughly 80% of all the remaining feet. The first three feet of a couplet has a strong tendency to stick to these four (though `mḿ` and `ḿm` are sometimes employed to avoid monotonicity), while the fifth and the sixth feet can make use of a wider variety of quadrimoraic feet, including `ḿuú`, `úuuú`, `úuuu` and `úum`. 
 
-When the fourth feet is `ḿu`, the fifth feet is allowed to be `úmuu` or `úmm`. This extrametric syllable replaces the pause; hence
+When the fourth feet is `ḿu`, the fifth feet is allowed to be `úmuu` or `úmm`. This extrametric syllable replaces the pause; hence the initial consonant of the following syllable is lenited.
