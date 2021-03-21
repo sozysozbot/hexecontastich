@@ -15,6 +15,9 @@
 
 `/u/` have merged to `/o/` in heavy syllables (that is, `/uN/`, `/uː/` and `/uh/`) except for the poems from the earliest time. Hence in 2020-10-11 we see both `sɑːmo̞ːˈʔindiko̞ˈʔɑssiɾiˈβo̞ndə` and `me̞ntiɾiˈnɑsse̞ɣe̞ʔɑːməko̞ˈnumbə` while we see no more of `/uN/` in the later poems. The merger of `/uː/` to `/o:/` has been particularly early, and even in earlier times `/uː/` occurred only in onomatopoeic `/buːbuː/` and `/nuːnuː/`.
 
+## Exceptional syllables
+There is a rare instance of an interjection known to be monosyllabic by metric but written as a three-syllable sequence `/ɣəh/ + /kə/ + /ɣi/`. It is usually interpreted that this sequence denoted `/hɑj/`.
+
 ## Assimilation
 
 |      |    N   |    h   |

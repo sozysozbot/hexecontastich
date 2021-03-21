@@ -11,6 +11,9 @@ pub enum Coda {
     Nasal,
     H,
     Long,
+
+    /// following Vowel::A, gives /aj/; only used in interjections
+    Falling,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -34,6 +37,9 @@ pub enum Onset {
     K,
     G,
     Q,
+
+    /// Used only for interjections
+    H,
 }
 
 impl Coda {
@@ -43,6 +49,7 @@ impl Coda {
             Self::Nasal => "N",
             Self::H => "h",
             Self::Long => "ː",
+            Self::Falling => "j",
         }
     }
 }
@@ -74,6 +81,7 @@ impl Onset {
             Self::K => "k",
             Self::G => "ɣ",
             Self::Q => "ʔ",
+            Self::H => "h",
         }
     }
 }
@@ -111,9 +119,65 @@ const fn vocalic(c: char) -> Option<(Vowel, bool)> {
     }
 }
 
+fn replace<T>(source: &[T], from: &[T], to: &[T]) -> Vec<T>
+where
+    T: Clone + PartialEq,
+{
+    let mut result = source.to_vec();
+    let from_len = from.len();
+    let to_len = to.len();
+
+    let mut i = 0;
+    while i + from_len <= result.len() {
+        if result[i..].starts_with(from) {
+            result.splice(i..i + from_len, to.iter().cloned());
+            i += to_len;
+        } else {
+            i += 1;
+        }
+    }
+
+    result
+}
+
+pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
+    let ans = convert_line_to_sylls_literally(text_);
+
+    // There is a rare instance of an interjection known to be monosyllabic by metric but written as a three-syllable sequence `/ɣəh/ + /kə/ + /ɣi/`. It is usually interpreted that this sequence denoted `/hɑj/`.
+    replace(
+        &ans,
+        &vec![
+            Syllable {
+                onset: Onset::G,
+                accented: false,
+                coda: Some(Coda::H),
+                vowel: Vowel::A,
+            }, // ɣəh
+            Syllable {
+                onset: Onset::K,
+                accented: false,
+                coda: None,
+                vowel: Vowel::A,
+            }, // kə
+            Syllable {
+                onset: Onset::G,
+                accented: false,
+                coda: None,
+                vowel: Vowel::I,
+            }, // ɣi
+        ],
+        &vec![Syllable {
+            onset: Onset::H,
+            accented: false,
+            coda: Some(Coda::Falling),
+            vowel: Vowel::A,
+        }],
+    )
+}
+
 #[allow(clippy::too_many_lines)]
 #[must_use]
-pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
+pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
     #[derive(Clone, Copy)]
     enum ParserState {
         Nothing,

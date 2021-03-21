@@ -149,6 +149,7 @@ pub fn to_ipa(line: &Line, warn: bool) -> Result<String, &'static str> {
                     [w!('U'), w!('m'), w!('u'), w!('u'), ..] | [w!('U'), w!('m'), w!('m'), ..]
                 ));
         let onset = match (is_plosive, syll.onset) {
+            (_, Onset::H) => "h",
             (_, Onset::T) => "t",
             (_, Onset::K) => "k",
             (_, Onset::S) => "s",
@@ -180,11 +181,12 @@ pub fn to_ipa(line: &Line, warn: bool) -> Result<String, &'static str> {
         let coda = match syll.coda {
             None => "",
             Some(Coda::Long) => "ː",
+            Some(Coda::Falling) => "j",
             Some(Coda::H) => match sylls[i + 1].onset {
                 Onset::K | Onset::T | Onset::P => "h",
                 Onset::S => "s",
-                Onset::G | Onset::B | Onset::N | Onset::M | Onset::Q => return Err(
-                    "Aspirations should not be followed by a glottal stop or a voiced consonant",
+                Onset::G | Onset::B | Onset::N | Onset::M | Onset::Q | Onset::H => return Err(
+                    "Aspirations should not be followed by a glottal stop, a glottal fricative or a voiced consonant",
                 ),
                 Onset::R => {
                     // `/ɾ/` + unaccented short vowel + `/ɾ/` turns the first `/ɾ/` into `[d]`
@@ -216,7 +218,8 @@ pub fn to_ipa(line: &Line, warn: bool) -> Result<String, &'static str> {
                     "n"
                 }
                 Onset::P | Onset::B | Onset::M => "m",
-                Onset::Q => return Err("Nasals should not be followed by a glottal stop"),
+                Onset::Q => return Err("Nasals should not be followed by a glottal stop"),           
+                Onset::H => return Err("Nasals should not be followed by a glottal fricative"),
             },
         };
         let vowel = match syll.vowel {
@@ -225,7 +228,7 @@ pub fn to_ipa(line: &Line, warn: bool) -> Result<String, &'static str> {
             Vowel::I => "i",
             Vowel::U => "u",
             Vowel::A => match (syll.coda, syll.accented) {
-                (Some(Coda::Long), _) | (_, true) => "ɑ",
+                (Some(Coda::Falling), _) | (Some(Coda::Long), _) | (_, true) => "ɑ",
                 (None, false) | (Some(Coda::H), false) => "ə",
                 (Some(Coda::Nasal), false) => {
                     // if closed syllable, ə becomes ɑ, except when the next syllable is accented
