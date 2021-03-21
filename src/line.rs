@@ -21,10 +21,8 @@ impl Line {
     #[must_use]
     pub fn new(line: &str) -> Self {
         let ans = Self(syllabify::convert_line_to_sylls(line));
-
-        match convert::to_ipa(&ans, true) {
-            Err(e) => panic!("{}, in line `{}`", e, line),
-            Ok(_) => {}
+        if let Err(e) = convert::to_ipa(&ans, true) {
+            panic!("{}, in line `{}`", e, line)
         }
         ans
     }

@@ -146,7 +146,7 @@ pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
     // There is a rare instance of an interjection known to be monosyllabic by metric but written as a three-syllable sequence `/ɣəh/ + /kə/ + /ɣi/`. It is usually interpreted that this sequence denoted `/hɑj/`.
     replace(
         &ans,
-        &vec![
+        &[
             Syllable {
                 onset: Onset::G,
                 accented: false,
@@ -166,7 +166,7 @@ pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
                 vowel: Vowel::I,
             }, // ɣi
         ],
-        &vec![Syllable {
+        &[Syllable {
             onset: Onset::H,
             accented: false,
             coda: Some(Coda::Falling),
@@ -207,7 +207,7 @@ pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
                     panic!(
                         "Expected a vowel, but got an unexpected character {}, in line {}",
                         chr,
-                        text_.clone()
+                        text_
                     )
                 }
             }
@@ -242,7 +242,7 @@ pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
                     panic!(
                         "Expected a vowel, but got an unexpected character {}, in line `{}`",
                         chr,
-                        text_.clone()
+                        text_
                     )
                 }
             }
@@ -282,7 +282,7 @@ pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
                     panic!(
                         "Expected an onset or a coda, but got an unexpected character {}, in line {}",
                         chr,
-                        text_.clone()
+                        text_
                     )
                 }
             }

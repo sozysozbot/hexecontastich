@@ -7,15 +7,14 @@ use std::io::Write;
 
 pub fn generate_li(poem: &Poem, date: &str) -> String {
     let how_many_lines = poem.line_count();
-    let li = if how_many_lines == 60 {
+    if how_many_lines == 60 {
         format!("    <li><a href=\"{}.html\">{}</a></li>", date, date)
     } else {
         format!(
             "    <li><a href=\"{}.html\">{}</a> (only the first {} lines are attested)</li>",
             date, date, how_many_lines
         )
-    };
-    li
+    }
 }
 
 pub fn write_index(poem_map: &HashMap<String, Poem>) -> Result<(), Box<dyn Error>> {

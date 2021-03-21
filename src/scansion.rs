@@ -220,7 +220,7 @@ impl std::fmt::Display for WeightAndAccent {
 
 pub fn to_scanned(line: &super::Line) -> String {
     let vec = line.as_vec();
-    let arr: Vec<WeightAndAccent> = vec.into_iter().map(|syll| (*syll).into()).collect();
+    let arr: Vec<WeightAndAccent> = vec.iter().map(|syll| (*syll).into()).collect();
     let mut ans = String::new();
     let mut mora_count = 0;
 
