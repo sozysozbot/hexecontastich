@@ -83,7 +83,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     info!("Writing progress.tsv");
     let mut file = File::create("progress.tsv")?;
-    writeln!(file, "{}", progress)?;
+    writeln!(file, "Copy & paste this to https://docs.google.com/spreadsheets/d/1MBkJpQ11hnyeUeAgQ9Ug5k5DTbx9nN0Citl8wPuM2Ss/edit#gid=0 \tnumber of lines\n{}", progress)?;
     info!("Processed the total of {} lines.", total_lines);
 
     //----------------------------------------------------------------
