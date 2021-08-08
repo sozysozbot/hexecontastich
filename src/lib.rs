@@ -43,7 +43,7 @@ impl Poem {
     #[must_use]
     pub fn line_count(&self) -> usize {
         let Self(poem) = &self;
-        poem.iter().map(|chapter| chapter.iter().count()).sum()
+        poem.iter().map(|chapter| chapter.len()).sum()
     }
 }
 
