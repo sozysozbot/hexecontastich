@@ -144,7 +144,7 @@ pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
     let ans = convert_line_to_sylls_literally(text_);
 
     // There is a rare instance of an interjection known to be monosyllabic by metric but written as a three-syllable sequence `/ɣəh/ + /kə/ + /ɣi/`. It is usually interpreted that this sequence denoted `/hɑj/`.
-    replace(
+    let ans = replace(
         &ans,
         &[
             Syllable {
@@ -171,6 +171,36 @@ pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
             accented: false,
             coda: Some(Coda::Falling),
             vowel: Vowel::A,
+        }],
+    );
+
+    replace(
+        &ans,
+        &[
+            Syllable {
+                onset: Onset::G,
+                accented: false,
+                coda: Some(Coda::H),
+                vowel: Vowel::A,
+            }, // ɣəh
+            Syllable {
+                onset: Onset::K,
+                accented: true,
+                coda: None,
+                vowel: Vowel::E,
+            }, // ke
+            Syllable {
+                onset: Onset::G,
+                accented: false,
+                coda: None,
+                vowel: Vowel::I,
+            }, // ɣi
+        ],
+        &[Syllable {
+            onset: Onset::H,
+            accented: true,
+            coda: Some(Coda::Falling),
+            vowel: Vowel::E,
         }],
     )
 }
