@@ -5,6 +5,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::Write;
 
+#[must_use]
 pub fn generate_li(poem: &Poem, date: &str) -> String {
     let how_many_lines = poem.line_count();
     if how_many_lines == 60 {
@@ -17,7 +18,9 @@ pub fn generate_li(poem: &Poem, date: &str) -> String {
     }
 }
 
-pub fn write_index(poem_map: &HashMap<String, Poem>) -> Result<(), Box<dyn Error>> {
+pub fn write_index<S: ::std::hash::BuildHasher>(
+    poem_map: &HashMap<String, Poem, S>,
+) -> Result<(), Box<dyn Error>> {
     use itertools::Itertools;
     let html = poem_map
         .iter()

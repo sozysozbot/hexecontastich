@@ -140,6 +140,7 @@ where
     result
 }
 
+#[must_use]
 pub fn convert_line_to_sylls(text_: &str) -> Vec<Syllable> {
     let ans = convert_line_to_sylls_literally(text_);
 
@@ -219,26 +220,22 @@ pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
     let text: Vec<char> = text_.chars().collect();
     let mut ans = vec![];
     let mut state = ParserState::Nothing;
-    for chr in text.clone() {
+    for chr in text {
         match state {
-            ParserState::Nothing => {
-                if let Some(onset) = consonant(chr) {
-                    state = ParserState::Onset(onset)
-                } else {
-                    panic!("Expected an onset, but got an unexpected character {}", chr)
-                }
-            }
+            ParserState::Nothing => consonant(chr).map_or_else(
+                || panic!("Expected an onset, but got an unexpected character {}", chr),
+                |onset| state = ParserState::Onset(onset),
+            ),
             ParserState::Onset(onset) => {
                 if let Some((vowel, accented)) = vocalic(chr) {
-                    state = ParserState::OnsetAndVowel(onset, vowel, accented)
+                    state = ParserState::OnsetAndVowel(onset, vowel, accented);
                 } else if chr == '*' {
                     /* nothing */
                 } else {
                     panic!(
                         "Expected a vowel, but got an unexpected character {}, in line {}",
-                        chr,
-                        text_
-                    )
+                        chr, text_
+                    );
                 }
             }
             ParserState::OnsetAndVowelAndNasalOrS(onset, vowel, accented, onset2) => {
@@ -251,7 +248,7 @@ pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
                         accented,
                     });
 
-                    state = ParserState::OnsetAndVowel(onset2, vowel2, accented2)
+                    state = ParserState::OnsetAndVowel(onset2, vowel2, accented2);
                 } else if let Some(onset3) = consonant(chr) {
                     let coda = match onset2 {
                         Onset::M | Onset::N => Coda::Nasal,
@@ -267,13 +264,12 @@ pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
                         accented,
                     });
 
-                    state = ParserState::Onset(onset3)
+                    state = ParserState::Onset(onset3);
                 } else {
                     panic!(
                         "Expected a vowel, but got an unexpected character {}, in line `{}`",
-                        chr,
-                        text_
-                    )
+                        chr, text_
+                    );
                 }
             }
             ParserState::OnsetAndVowel(onset, vowel, accented) => {
@@ -283,7 +279,7 @@ pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
                         vowel,
                         accented,
                         consonant(chr).unwrap(),
-                    )
+                    );
                 } else if let Some(new_onset) = consonant(chr) {
                     ans.push(Syllable {
                         onset,
@@ -291,7 +287,7 @@ pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
                         coda: None,
                         accented,
                     });
-                    state = ParserState::Onset(new_onset)
+                    state = ParserState::Onset(new_onset);
                 } else if chr == 'h' {
                     ans.push(Syllable {
                         onset,
@@ -299,7 +295,7 @@ pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
                         coda: Some(Coda::H),
                         accented,
                     });
-                    state = ParserState::Nothing
+                    state = ParserState::Nothing;
                 } else if chr == ':' || chr == ';' {
                     ans.push(Syllable {
                         onset,
@@ -307,13 +303,13 @@ pub fn convert_line_to_sylls_literally(text_: &str) -> Vec<Syllable> {
                         coda: Some(Coda::Long),
                         accented,
                     });
-                    state = ParserState::Nothing
+                    state = ParserState::Nothing;
                 } else {
                     panic!(
                         "Expected an onset or a coda, but got an unexpected character {}, in line {}",
                         chr,
                         text_
-                    )
+                    );
                 }
             }
         }

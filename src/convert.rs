@@ -1,5 +1,6 @@
 use regex::Regex;
 
+#[must_use]
 pub fn elide_initial_glottal_stop(ans: &str) -> String {
     lazy_static! {
         static ref RG1: Regex = Regex::new(r"^ʔɑ([mnŋ])([^ˈ])").unwrap();

@@ -22,7 +22,7 @@ impl Line {
     pub fn new(line: &str) -> Self {
         let ans = Self(syllabify::convert_line_to_sylls(line));
         if let Err(e) = convert::to_ipa(&ans, true) {
-            panic!("{}, in line `{}`", e, line)
+            panic!("{}, in line `{}`", e, line);
         }
         ans
     }

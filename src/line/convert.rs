@@ -61,7 +61,7 @@ no̞ːmo̞ːʔe̞ːˈsiɾimɑːɾətəˈniːʔə
 me̞ːˈsiɾo̞ɣɑːʔɑːˈmɑsəɣe̞ːˈniː
 ˈsindiɾəˈɣɑssəɣo̞mɑːɾəkəˈne̞ːʔə
 ˈsɑtɑːməso̞ˈɾindiɾiˈpɑːso̞βəˈɾiːβə"
-        )
+        );
     }
 
     #[test]
@@ -91,7 +91,7 @@ diːnisiˈʔindəɾinɑːɣəse̞ˈniː
 niːˈpiɾəme̞ːkɑːˈɾɑnte̞ɣo̞ˈniː
 ʔiːˈsinəɾe̞ːʔiːˈʔintikəβe̞ːʔə
 sɑːsɑːˈβɑse̞ɾisinɑːməso̞ˈɾində"
-        )
+        );
     }
 
     #[test]
@@ -130,13 +130,15 @@ siːsiːˈʔɑnte̞ɾəkɑːsəɾiˈnisse̞
 ɑːkɑːˈkɑssiɾiˈtɑhte̞ɣəˈniː
 biːɾine̞ʔɑːˈɾɑkiɣɑːnɑːˈʔihti
 ˈʔihto̞ɾe̞ˈsɑntəniˈsuhtəβiˈʔo̞ndə"
-        )
+        );
     }
 }
 
 use super::Line;
 
+#[allow(clippy::too_many_lines)]
 pub fn to_ipa(line: &Line, warn: bool) -> Result<String, &'static str> {
+    use std::fmt::Write as _;
     let sylls = line.as_vec();
     let scansions: Vec<WeightAndAccent> = sylls.iter().map(|a| (*a).into()).collect();
     let mut ans = String::new();
@@ -168,7 +170,8 @@ pub fn to_ipa(line: &Line, warn: bool) -> Result<String, &'static str> {
                     && matches!(
                         sylls.get(i + 1),
                         Some(Syllable {
-                            onset: Onset::R, ..
+                            onset: Onset::R,
+                            ..
                         })
                     )
                 {
@@ -228,8 +231,8 @@ pub fn to_ipa(line: &Line, warn: bool) -> Result<String, &'static str> {
             Vowel::I => "i",
             Vowel::U => "u",
             Vowel::A => match (syll.coda, syll.accented) {
-                (Some(Coda::Falling), _) | (Some(Coda::Long), _) | (_, true) => "ɑ",
-                (None, false) | (Some(Coda::H), false) => "ə",
+                (Some(Coda::Falling | Coda::Long), _) | (_, true) => "ɑ",
+                (None | Some(Coda::H), false) => "ə",
                 (Some(Coda::Nasal), false) => {
                     // if closed syllable, ə becomes ɑ, except when the next syllable is accented
                     if matches!(sylls.get(i + 1), Some(Syllable { accented: true, .. })) {
@@ -240,7 +243,7 @@ pub fn to_ipa(line: &Line, warn: bool) -> Result<String, &'static str> {
                 }
             },
         };
-        ans += &format!("{}{}{}{}", accent, onset, vowel, coda)
+        let _ = write!(ans, "{}{}{}{}", accent, onset, vowel, coda);
     }
     Ok(ans)
 }

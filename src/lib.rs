@@ -1,3 +1,11 @@
+#![warn(clippy::pedantic, clippy::nursery)]
+#![allow(
+    clippy::non_ascii_literal,
+    clippy::unicode_not_nfc,
+    clippy::missing_panics_doc,
+    clippy::missing_errors_doc
+)]
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -43,11 +51,14 @@ impl Poem {
     #[must_use]
     pub fn line_count(&self) -> usize {
         let Self(poem) = &self;
-        poem.iter().map(|chapter| chapter.len()).sum()
+        poem.iter().map(std::vec::Vec::len).sum()
     }
 }
 
-pub fn count_syll<F>(poem_map: &HashMap<String, Poem>, f: &F) -> usize
+pub fn count_syll<F, S: ::std::hash::BuildHasher>(
+    poem_map: &HashMap<String, Poem, S>,
+    f: &F,
+) -> usize
 where
     F: Fn(&line::syllabify::Syllable) -> bool,
 {

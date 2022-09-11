@@ -10,7 +10,7 @@ mod tests {
     #[allow(dead_code)]
     fn scansion(text: &str) -> String {
         text.lines()
-            .map(|line| scansion_line(line))
+            .map(scansion_line)
             .collect::<Vec<_>>()
             .join("\n")
     }
@@ -49,7 +49,7 @@ mm ḿuu muu ḿu
 ú muu ḿuú muu ḿ
 múu mm ḿuu ḿu
 mm ḿuu ḿuu ḿu"
-        )
+        );
     }
 
     #[test]
@@ -91,7 +91,7 @@ mm múu muu ḿu
 múu mm úum ḿ
 ḿuu ḿuu muu ḿu
 ú muu ḿuu ḿuu ḿu"
-        )
+        );
     }
 
     #[test]
@@ -121,7 +121,7 @@ múu mm ḿuu ḿu
 múu mm ḿuu ḿ
 múu mm ḿuu mu
 mm úuuu muu ḿu"
-        )
+        );
     }
 
     #[test]
@@ -160,7 +160,7 @@ ḿuu mḿ muu ḿu
 mm ḿuu ḿuu ḿ
 muu múu mm ḿu
 ḿuu ḿuu ḿuu ḿu"
-        )
+        );
     }
 }
 
@@ -218,7 +218,9 @@ impl std::fmt::Display for WeightAndAccent {
     }
 }
 
+#[must_use]
 pub fn to_scanned(line: &super::Line) -> String {
+    use std::fmt::Write as _;
     let vec = line.as_vec();
     let arr: Vec<WeightAndAccent> = vec.iter().map(|syll| (*syll).into()).collect();
     let mut ans = String::new();
@@ -228,15 +230,15 @@ pub fn to_scanned(line: &super::Line) -> String {
 
     // extrametric `úmuu` or `úmm`
     if matches!(&arr[..], [w!('U'), w!('m'), w!('u'), w!('u'), ..]) {
-        ans += &format!("{} {}{}{} ", arr[0], arr[1], arr[2], arr[3]);
+        let _ = write!(ans, "{} {}{}{} ", arr[0], arr[1], arr[2], arr[3]);
         i = 4;
     } else if matches!(&arr[..], [w!('U'), w!('m'), w!('m'), ..]) {
-        ans += &format!("{} {}{} ", arr[0], arr[1], arr[2]);
+        let _ = write!(ans, "{} {}{} ", arr[0], arr[1], arr[2]);
         i = 3;
     }
 
     while i < arr.len() {
-        ans += &format!("{}", arr[i]);
+        let _ = write!(ans, "{}", arr[i]);
         if arr[i].heavy {
             mora_count += 2;
         } else {
